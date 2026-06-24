@@ -1,6 +1,6 @@
 const productmodel = require("../models/product.model")
 const imagekit = require("../services/ImageKit")
-const uid = require("uuid")
+const { randomUUID } = require('crypto')
 
 // create product
 
@@ -20,7 +20,7 @@ const createProduct = async (req, res) => {
             images.map(file =>
                 imagekit.upload({
                     file: file.buffer,
-                    fileName: uid.v4(),
+                    fileName: randomUUID(),
                     folder: "/products/product"
                 })
             )

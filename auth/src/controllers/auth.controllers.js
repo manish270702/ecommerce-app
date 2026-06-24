@@ -197,4 +197,33 @@ const admin = async (req, res) => {
 }
 
 
-module.exports = { register, login, refreshToken,admin }
+const me = async (req, res) => {
+    if (req.user) {
+        return res.status(200).json({ user: req.user })
+    }
+
+    const refreshtoken = req.cookies && req.cookies.token
+    if (!refreshtoken) {
+        return res.status(401).json({ message: 'unauthorized' })
+    }
+
+    try {
+        const decoded = await jwt.verify(refreshtoken, process.env.REFRESH_TOKEN_SECRET)
+        const user = await usermodel.findOne({ _id: decoded.id })
+        if (!user) return res.status(404).json({ message: 'user not found' })
+        return res.status(200).json({ user })
+    } catch (err) {
+        return res.status(401).json({ message: 'unauthorized' })
+    }
+}
+
+const logout = async (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict'
+    })
+    return res.status(200).json({ message: 'logged out successfully' })
+}
+
+module.exports = { register, login, refreshToken, admin, me, logout }
