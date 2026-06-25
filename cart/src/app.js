@@ -7,8 +7,12 @@ const cors = require("cors")
 const cartRoutes = require("./routes/cart.route")
 
 const app = express()
+app.use(cookieparser())
+app.use(express.json());
 connectToDb()
 
 app.use("/cart",cartRoutes)
+
+console.log(process.env.PORT)
 
 module.exports = app
