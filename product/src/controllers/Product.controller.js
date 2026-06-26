@@ -84,4 +84,59 @@ const deleteProduct = async (req, res) => {
 };
 
 
-module.exports = { createProduct, deleteProduct };
+// get all products
+const getProducts = async (req, res) => {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const products = await productmodel.find().skip((page - 1) * limit)
+            .limit(limit);
+
+        if (!products) return res.status(204).json({ message: "no products found" })
+
+        return res.status(202).json({ products })
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message })
+    }
+}
+
+// get single product by id
+
+const getSingleProduct = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const product = await productmodel.findOne({ _id: id })
+
+        if (!product) return res.status(204).json({ message: "no products found" })
+
+        return res.status(202).json({ product })
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message })
+    }
+}
+
+// filter by search
+
+const search = async (req, res) => {
+    try {
+        const { keyword } = req.params
+
+        const product = await productmodel.find({
+            $or: [
+                { title: { $regex: keyword, $options: "i" } },
+                { description: { $regex: keyword, $options: "i" } },
+                { brand: { $regex: keyword, $options: "i" } },
+                { category: { $regex: keyword, $options: "i" } }
+            ]
+        });
+
+        return res.status(200).json({ success: true, data: product });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message })
+    }
+}
+
+// search by category
+
+module.exports = { createProduct, deleteProduct, getProducts, getSingleProduct, search };

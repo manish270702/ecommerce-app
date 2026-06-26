@@ -53,6 +53,10 @@ const createCart = async (req, res) => {
     }
 };
 
-module.exports = { createCart };
+
+// delete product from cart
+
+
+// delete whole cart
 
 module.exports = { getCartItems, createCart }

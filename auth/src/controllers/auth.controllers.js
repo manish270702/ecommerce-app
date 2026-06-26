@@ -65,11 +65,16 @@ const login = async (req, res) => {
         ]
     })
 
-    console.log(user)
+    // console.log(user)
+    if (!user) {
+        return res.status(409).json({
+            message: "something went wrong"
+        })
+    }
 
     const verifyPassword = await bcrypt.compare(password, user.password)
 
-    if (!user || !verifyPassword) {
+    if (!verifyPassword) {
         return res.status(409).json({
             message: "something went wrong"
         })
