@@ -1,5 +1,5 @@
 const orderModel = require("../model/order.model")
-
+const axios = require("axios")
 const getorders = async (req, res) => {
     try {
         const user = req.user
@@ -8,7 +8,7 @@ const getorders = async (req, res) => {
 
         const order = await orderModel.find({ user: user.id })
 
-        if (order.length>0) {
+        if (order.length > 0) {
             return res.status(200).json({
                 order,
                 message: "worked"
@@ -44,26 +44,38 @@ const getorders = async (req, res) => {
 
 
 const createOrder = async (req, res) => {
+    const token = req.cookies.token
     try {
         if (!req.user) {
             return res.status(401).json({
                 message: "Unauthorized"
             });
         }
+        const data = await axios.get("http://localhost:3001/cart", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        const x = data.data.items[0]
 
-        console.log(req.body)
+        console.log(x)
 
-        const { items, totalAmount } = req.body;
+        // const { items, totalAmount } = req.body;
+
+        const amt = x.items.reduce((sum, item) => {
+            return sum + item.price * item.quantity;
+        }, 0);
+        console.log(amt)
 
         const order = await orderModel.create({
-            user: req.user.id,
-            items,
-            totalAmount
+            user: x.user,
+            items:x.items,
+            totalAmount:amt
         });
 
         return res.status(201).json({
             message: "Order created successfully",
-            order
+            // order
         });
 
     } catch (err) {
@@ -165,8 +177,8 @@ const getAllOrders = async (req, res) => {
 
         const user = req.user
 
-        if(!user){
-            return res.status(401).json({message:"Unauthorize"})
+        if (!user) {
+            return res.status(401).json({ message: "Unauthorize" })
         }
 
         const orders = await orderModel.find()
@@ -187,7 +199,7 @@ const updateOrderStatus = async (req, res) => {
     try {
         const user = req.user
 
-        if(!user) return res.status(401).json({message:"Unauthorized access"})
+        if (!user) return res.status(401).json({ message: "Unauthorized access" })
         const order = await orderModel.findByIdAndUpdate(
             req.params.id,
             {
