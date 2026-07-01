@@ -4,38 +4,75 @@ const getorders = async (req, res) => {
     try {
         const user = req.user
 
-        if (!user) return res.status(400).json({ message: "unAuthorised" })
+        if (!user) return res.status(401).json({ message: "unAuthorised" })
 
-        const order = await orderModel.findOne({ user: user.id })
+        const order = await orderModel.find({ user: user.id })
 
-        if (order) {
+        if (order.length>0) {
             return res.status(200).json({
                 order,
                 message: "worked"
             })
         }
 
-        return res.status(401).json({ message: "no orders" })
+        return res.status(404).json({ message: "no orders" })
     } catch (err) {
-        console.log(err, "something went wrong")
-        return res.status(500).json({ message: "something went wrong" })
+        console.log(err, "Internal Server Error")
+        return res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
+// const createOrder = async (req, res) => {
+//     try {
+//         const user = req.user
+//         const order = await orderModel.create({
+//             user: req.user.id,
+//             items: req.body.items,
+//             totalAmount: req.body.totalAmount
+//         });
+
+//         return res.status(201).json({
+//             message: "Order created successfully",
+//             order
+//         });
+//     } catch (err) {
+//         return res.status(500).json({
+//             message: err.message
+//         });
+//     }
+// }
+
+
 const createOrder = async (req, res) => {
     try {
-        const order = await orderModel.create(req.body);
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Unauthorized"
+            });
+        }
+
+        console.log(req.body)
+
+        const { items, totalAmount } = req.body;
+
+        const order = await orderModel.create({
+            user: req.user.id,
+            items,
+            totalAmount
+        });
 
         return res.status(201).json({
             message: "Order created successfully",
             order
         });
+
     } catch (err) {
         return res.status(500).json({
             message: err.message
         });
     }
-}
+};
+
 
 const getOrderById = async (req, res) => {
     try {
@@ -55,44 +92,44 @@ const getOrderById = async (req, res) => {
         return res.status(200).json(order);
 
     } catch (err) {
-        return res.status(500).json({ message: "Something went wrong" });
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
 
-const updateOrder = async (req, res) => {
-    try {
+// const updateOrder = async (req, res) => {
+//     try {
 
-        const user = req.user;
+//         const user = req.user;
 
-        if (!user)
-            return res.status(401).json({ message: "Unauthorized" });
+//         if (!user)
+//             return res.status(401).json({ message: "Unauthorized" });
 
-        const order = await orderModel.findOneAndUpdate(
-            {
-                _id: req.params.id,
-                user: user.id
-            },
-            {
-                $set: req.body
-            },
-            {
-                new: true
-            }
-        );
+//         const order = await orderModel.findOneAndUpdate(
+//             {
+//                 _id: req.params.id,
+//                 user: user.id
+//             },
+//             {
+//                 $set: req.body
+//             },
+//             {
+//                 new: true
+//             }
+//         );
 
-        if (!order)
-            return res.status(404).json({ message: "Order not found" });
+//         if (!order)
+//             return res.status(404).json({ message: "Order not found" });
 
-        return res.status(200).json({
-            message: "Order updated",
-            order
-        });
+//         return res.status(200).json({
+//             message: "Order updated",
+//             order
+//         });
 
-    } catch (err) {
-        return res.status(500).json({ message: "Something went wrong" });
-    }
-}
+//     } catch (err) {
+//         return res.status(500).json({ message: "Internal Server Error" });
+//     }
+// }
 
 
 const deleteOrder = async (req, res) => {
@@ -117,16 +154,20 @@ const deleteOrder = async (req, res) => {
 
     } catch (err) {
         return res.status(500).json({
-            message: "Something went wrong"
+            message: "Internal Server Error"
         });
     }
 }
 
 
-
-
 const getAllOrders = async (req, res) => {
     try {
+
+        const user = req.user
+
+        if(!user){
+            return res.status(401).json({message:"Unauthorize"})
+        }
 
         const orders = await orderModel.find()
             .populate("user")
@@ -136,16 +177,17 @@ const getAllOrders = async (req, res) => {
 
     } catch (err) {
         return res.status(500).json({
-            message: "Something went wrong"
+            message: "Internal Server Error"
         });
     }
 }
 
 
-
 const updateOrderStatus = async (req, res) => {
     try {
+        const user = req.user
 
+        if(!user) return res.status(401).json({message:"Unauthorized access"})
         const order = await orderModel.findByIdAndUpdate(
             req.params.id,
             {
@@ -168,9 +210,10 @@ const updateOrderStatus = async (req, res) => {
 
     } catch (err) {
         return res.status(500).json({
-            message: "Something went wrong"
+            message: "Internal Server Error"
         });
     }
 }
 
-module.exports = { getorders, createOrder }
+
+module.exports = { getorders, createOrder, updateOrderStatus, getAllOrders, deleteOrder, getOrderById }

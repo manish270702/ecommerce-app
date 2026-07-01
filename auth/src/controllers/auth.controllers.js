@@ -86,6 +86,8 @@ const login = async (req, res) => {
         { expiresIn: "15m" }
     );
 
+    // user.delete()
+
 
     const refreshToken = jwt.sign(
         { id: user._id, role: user.role },
@@ -115,7 +117,7 @@ const refreshToken = async (req, res) => {
     const refreshtoken = req.cookies.token
     const decoded = await jwt.verify(refreshtoken, process.env.REFRESH_TOKEN_SECRET)
 
-    console.log(decoded)
+    // console.log(decoded)
 
     const user = await usermodel.findOne({ _id: decoded.id })
 

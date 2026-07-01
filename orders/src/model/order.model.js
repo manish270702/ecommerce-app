@@ -10,7 +10,7 @@ const orderSchema = new mongoose.Schema(
 
     items: [
         {
-            product: {
+            productid: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "product",
                 required: true
@@ -37,7 +37,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
         type: String,
         enum: ["COD", "Online"],
-        default: "COD"
+        default: "COD",
     },
 
     paymentStatus: {
