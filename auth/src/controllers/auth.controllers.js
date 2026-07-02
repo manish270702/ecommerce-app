@@ -80,8 +80,10 @@ const login = async (req, res) => {
         })
     }
 
+    const safeUser = await usermodel.findById(user._id).select("-password");
+
     const accessToken = jwt.sign(
-        { id: user._id, email: user.email },
+        { id: user._id, email: user.email, role: user.role },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "15m" }
     );
@@ -104,7 +106,7 @@ const login = async (req, res) => {
 
     res.status(200).json({
         message: "user logined successfully",
-        user,
+        user:safeUser,
         accessToken
     })
 
@@ -122,7 +124,7 @@ const refreshToken = async (req, res) => {
     const user = await usermodel.findOne({ _id: decoded.id })
 
     const accessToken = jwt.sign(
-        { id: user._id, email: user.email },
+        { id: user._id, email: user.email, role: user.role },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "15m" }
     );
@@ -176,7 +178,7 @@ const admin = async (req, res) => {
     const user = await usermodel.create({ name, email, phone,role:"admin", password: hashedpassword })
 
     const accessToken = jwt.sign(
-        { id: user._id, email: user.email },
+        { id: user._id, email: user.email, role: user.role },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "15m" }
     );
@@ -209,13 +211,13 @@ const me = async (req, res) => {
         return res.status(200).json({ user: req.user })
     }
 
-    const refreshtoken = req.cookies && req.cookies.token
-    if (!refreshtoken) {
+    const refreshToken = req.cookies?.token
+    if (!refreshToken) {
         return res.status(401).json({ message: 'unauthorized' })
     }
 
     try {
-        const decoded = await jwt.verify(refreshtoken, process.env.REFRESH_TOKEN_SECRET)
+        const decoded = await jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
         const user = await usermodel.findOne({ _id: decoded.id })
         if (!user) return res.status(404).json({ message: 'user not found' })
         return res.status(200).json({ user })

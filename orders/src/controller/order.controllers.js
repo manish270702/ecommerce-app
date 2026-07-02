@@ -44,7 +44,7 @@ const getorders = async (req, res) => {
 
 
 const createOrder = async (req, res) => {
-    const token = req.cookies.token
+    const token = req.headers.authorizaton.split(" ")[1]
     try {
         if (!req.user) {
             return res.status(401).json({
@@ -69,9 +69,18 @@ const createOrder = async (req, res) => {
 
         const order = await orderModel.create({
             user: x.user,
-            items:x.items,
-            totalAmount:amt
+            items: x.items,
+            totalAmount: amt
         });
+
+        await axios.delete(
+            "http://localhost:3001/cart",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
 
         return res.status(201).json({
             message: "Order created successfully",

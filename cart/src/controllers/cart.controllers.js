@@ -15,7 +15,7 @@ const getCartItems = async (req, res) => {
 const createCart = async (req, res) => {
     try {
         const user = req.user;
-        const { productid, quantity,price } = req.body;
+        const { productid, quantity, price } = req.body;
 
         if (!user) {
             return res.status(401).json({ message: 'unauthorized' });
@@ -32,7 +32,7 @@ const createCart = async (req, res) => {
                 cart.items[itemIndex].quantity = Number(quantity);
             } else {
                 // Product doesn't exist: push the new item into the array
-                cart.items.push({ productid, quantity,price });
+                cart.items.push({ productid, quantity, price });
             }
 
             await cart.save();
@@ -41,9 +41,9 @@ const createCart = async (req, res) => {
         } else {
             const newCart = await cartModel.create({
                 user: user.id,
-                items: [{ productid, quantity,price }]
+                items: [{ productid, quantity, price }]
             });
-            
+
             return res.status(201).json({ message: "Cart created successfully", item: newCart });
         }
 
@@ -59,4 +59,20 @@ const createCart = async (req, res) => {
 
 // delete whole cart
 
-module.exports = { getCartItems, createCart }
+const deleteCart = async (req, res) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({ message: 'unauthorized' });
+        }
+
+        let cart = await cartModel.findOneAndDelete({ user: user.id });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'something went wrong' });
+    }
+};
+
+module.exports = { getCartItems, createCart,deleteCart }

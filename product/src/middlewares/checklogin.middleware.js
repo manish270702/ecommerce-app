@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken');
 
 const validate = async (req, res, next) => {
     try {
-        const token = req.cookies?.token;
+        const token 
 
-        if (!token && req.headers.authorization) {
+        if (req.headers.authorization) {
             token = req.headers.authorization.split(" ")[1];
         }
 
@@ -16,7 +16,7 @@ const validate = async (req, res, next) => {
 
         const decoded = jwt.verify(
             token,
-            process.env.REFRESH_TOKEN_SECRET
+            process.env.ACCESS_TOKEN_SECRET
         );
 
         req.user = {

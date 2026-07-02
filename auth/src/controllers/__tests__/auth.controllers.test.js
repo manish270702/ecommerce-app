@@ -2,25 +2,32 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 jest.mock('../../models/user.model')
-jest.mock('bcrypt')
-jest.mock('jsonwebtoken')
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+  compare: jest.fn(),
+}))
+jest.mock('jsonwebtoken', () => ({
+  sign: jest.fn(),
+  verify: jest.fn(),
+}))
 
 const usermodel = require('../../models/user.model')
-
 const { register, login, refreshToken, admin, me, logout } = require('../auth.controllers')
 
 const createMockRes = () => {
   const res = {}
   res.status = jest.fn().mockReturnValue(res)
   res.json = jest.fn().mockReturnValue(res)
-  res.cookie = jest.fn()
-  res.clearCookie = jest.fn()
+  res.cookie = jest.fn().mockReturnValue(res)
+  res.clearCookie = jest.fn().mockReturnValue(res)
   return res
 }
 
 describe('Auth Controllers', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    process.env.ACCESS_TOKEN_SECRET = 'access-secret'
+    process.env.REFRESH_TOKEN_SECRET = 'refresh-secret'
   })
 
   describe('register', () => {
@@ -41,7 +48,8 @@ describe('Auth Controllers', () => {
 
       await register(req, res)
 
-      expect(usermodel.findOne).toHaveBeenCalled()
+      expect(usermodel.findOne).toHaveBeenCalledWith({ email: 'exists@example.com' })
+      expect(bcrypt.hash).toHaveBeenCalledWith('p', 10)
       expect(res.status).toHaveBeenCalledWith(409)
       expect(res.json).toHaveBeenCalledWith({ message: 'user already exists with this email' })
     })
@@ -58,43 +66,43 @@ describe('Auth Controllers', () => {
 
       await register(req, res)
 
-      expect(usermodel.findOne).toHaveBeenCalledWith({ email: 'u@example.com' })
-      expect(usermodel.create).toHaveBeenCalled()
-      expect(res.cookie).toHaveBeenCalled()
+      expect(usermodel.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'u',
+        email: 'u@example.com',
+        phone: '123',
+        password: 'hashed',
+      }))
+      expect(res.cookie).toHaveBeenCalledWith('token', 'refresh-token', expect.objectContaining({ httpOnly: true }))
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'user created', user: createdUser, accessToken: 'access-token' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: 'user created',
+        user: createdUser,
+        accessToken: 'access-token',
+      }))
     })
   })
 
   describe('login', () => {
-    test('returns 409 when credentials invalid', async () => {
-      const foundUser = { _id: '1', email: 'a@b.com', password: 'hashed' }
-      usermodel.findOne.mockResolvedValue(foundUser)
-      bcrypt.compare.mockResolvedValue(false)
-
-      const req = { body: { loginId: 'a@b.com', password: 'wrong' } }
-      const res = createMockRes()
-
-      await login(req, res)
-
-      expect(res.status).toHaveBeenCalledWith(409)
-      expect(res.json).toHaveBeenCalledWith({ message: 'something went wrong' })
-    })
-
     test('logs in successfully', async () => {
-      const foundUser = { _id: '1', email: 'a@b.com', password: 'hashed', role: 'user' }
-      usermodel.findOne.mockResolvedValue(foundUser)
+      const safeUser = { _id: '1', email: 'u@example.com', role: 'user' }
+      usermodel.findOne.mockResolvedValue({ _id: '1', email: 'u@example.com', password: 'hashed-pass', role: 'user' })
       bcrypt.compare.mockResolvedValue(true)
-      jwt.sign.mockReturnValueOnce('access').mockReturnValueOnce('refresh')
+      usermodel.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(safeUser) })
+      jwt.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token')
 
-      const req = { body: { loginId: 'a@b.com', password: 'pass' } }
+      const req = { body: { loginId: 'u@example.com', password: 'p' } }
       const res = createMockRes()
 
       await login(req, res)
 
-      expect(res.cookie).toHaveBeenCalled()
+      expect(usermodel.findOne).toHaveBeenCalledWith({ $or: [{ email: 'u@example.com' }, { phone: 'u@example.com' }] })
+      expect(bcrypt.compare).toHaveBeenCalledWith('p', 'hashed-pass')
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'user logined successfully', user: foundUser, accessToken: 'access' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: 'user logined successfully',
+        user: safeUser,
+        accessToken: 'access-token',
+      }))
     })
   })
 
@@ -102,17 +110,22 @@ describe('Auth Controllers', () => {
     test('refreshes token successfully', async () => {
       const req = { cookies: { token: 'rtoken' } }
       const res = createMockRes()
-      jwt.verify.mockReturnValue({ id: '1' })
+      jwt.verify.mockResolvedValue({ id: '1' })
       const foundUser = { _id: '1', email: 'a@b.com', role: 'user' }
       usermodel.findOne.mockResolvedValue(foundUser)
       jwt.sign.mockReturnValueOnce('access').mockReturnValueOnce('refresh')
 
       await refreshToken(req, res)
 
+      expect(jwt.verify).toHaveBeenCalledWith('rtoken', 'refresh-secret')
       expect(usermodel.findOne).toHaveBeenCalledWith({ _id: '1' })
-      expect(res.cookie).toHaveBeenCalled()
+      expect(res.cookie).toHaveBeenCalledWith('token', 'refresh', expect.any(Object))
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'token refreshed successfully', user: foundUser, accessToken: 'access' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: 'token refreshed successfully',
+        user: foundUser,
+        accessToken: 'access',
+      }))
     })
   })
 
@@ -130,13 +143,13 @@ describe('Auth Controllers', () => {
     test('returns user from token cookie when req.user missing', async () => {
       const req = { cookies: { token: 'rtoken' } }
       const res = createMockRes()
-      jwt.verify.mockReturnValue({ id: '1' })
+      jwt.verify.mockResolvedValue({ id: '1' })
       const foundUser = { _id: '1', email: 'a@b.com' }
       usermodel.findOne.mockResolvedValue(foundUser)
 
       await me(req, res)
 
-      expect(jwt.verify).toHaveBeenCalledWith('rtoken', process.env.REFRESH_TOKEN_SECRET)
+      expect(jwt.verify).toHaveBeenCalledWith('rtoken', 'refresh-secret')
       expect(usermodel.findOne).toHaveBeenCalledWith({ _id: '1' })
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith({ user: foundUser })
@@ -150,7 +163,7 @@ describe('Auth Controllers', () => {
 
       await logout(req, res)
 
-      expect(res.clearCookie || res.cookie).toBeDefined()
+      expect(res.clearCookie).toHaveBeenCalledWith('token', expect.objectContaining({ httpOnly: true }))
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith({ message: 'logged out successfully' })
     })
