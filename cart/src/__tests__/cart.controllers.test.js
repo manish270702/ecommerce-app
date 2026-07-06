@@ -1,7 +1,7 @@
-jest.mock("../../model/cart.model");
+jest.mock("../model/cart.model");
 
-const cartModel = require("../../model/cart.model");
-const { getCartItems, createCart } = require("../cart.controllers");
+const cartModel = require("../model/cart.model");
+const { getCartItems, createCart, deleteCart, removeproduct } = require("../controllers/cart.controllers");
 
 const createMockRes = () => {
   const res = {};
@@ -257,6 +257,63 @@ describe("Cart Controllers", () => {
       expect(res.json).toHaveBeenCalledWith({
         message: "something went wrong",
       });
+    });
+  });
+
+  describe("removeproduct", () => {
+    test("returns 403 when id missing", async () => {
+      const req = { params: {} };
+      const res = createMockRes();
+
+      await removeproduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: "Invalid id" });
+    });
+
+    test("returns 401 when user missing", async () => {
+      const req = { params: { id: "p1" } };
+      const res = createMockRes();
+
+      await removeproduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+    });
+
+    test("calls model to find product and returns 200 on success", async () => {
+      cartModel.findOne.mockResolvedValue({});
+
+      const req = { params: { id: "p1" }, user: { id: "u1" } };
+      const res = createMockRes();
+
+      await removeproduct(req, res);
+
+      expect(cartModel.findOne).toHaveBeenCalledWith({ user: { id: "u1" }, productid: "p1" } || { user: "u1", productid: "p1" });
+    });
+  });
+
+  describe("deleteCart", () => {
+    test("returns 401 when user missing", async () => {
+      const req = {};
+      const res = createMockRes();
+
+      await deleteCart(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({ message: "unauthorized" });
+    });
+
+    test("deletes cart and returns 200 on success", async () => {
+      cartModel.findOneAndDelete.mockResolvedValue({});
+
+      const req = { user: { id: "u1" } };
+      const res = createMockRes();
+
+      await deleteCart(req, res);
+
+      expect(cartModel.findOneAndDelete).toHaveBeenCalledWith({ user: "u1" });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ message: "Cart deleted successfully" });
     });
   });
 });

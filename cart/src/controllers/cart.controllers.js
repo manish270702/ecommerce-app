@@ -15,6 +15,7 @@ const getCartItems = async (req, res) => {
 const createCart = async (req, res) => {
     try {
         const user = req.user;
+        console.log(user.id)
         const { productid, quantity, price } = req.body;
 
         if (!user) {
@@ -22,10 +23,11 @@ const createCart = async (req, res) => {
         }
 
         let cart = await cartModel.findOne({ user: user.id });
+        console.log(cart)
 
-        if (cart) {
+        if (cart && cart.items.length>0) {
             // 2. Check if the product already exists inside the user's cart array
-            const itemIndex = cart.items.findIndex(item => item.productid.toString() === productid);
+            const itemIndex = cart.items.findIndex(item => item.productid == productid);
 
             if (itemIndex > -1) {
                 // Product exists: increment the quantity
@@ -56,6 +58,27 @@ const createCart = async (req, res) => {
 
 // delete product from cart
 
+const removeproduct = async (req, res) => {
+    const { id } = req.params
+    const user = req.user
+
+    if (!id) return res.status(403).json({ message: "Invalid id" })
+
+    if (!user) return res.status(401).json({ message: "Unauthorize access" })
+
+    const cart =await cartModel.findOne({ user: user.id })
+    const itemindex = cart.items.findIndex(item => item.productid == id)
+    console.log(itemindex)
+    cart.items.splice(itemindex, 1)
+
+    await cart.save();
+
+
+
+    return res.status(200).json({ message: "item deleted successsfully" })
+
+}
+
 
 // delete whole cart
 
@@ -69,10 +92,12 @@ const deleteCart = async (req, res) => {
 
         let cart = await cartModel.findOneAndDelete({ user: user.id });
 
+        return res.status(200).json({ message: "Cart deleted successfully" })
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'something went wrong' });
     }
 };
 
-module.exports = { getCartItems, createCart,deleteCart }
+module.exports = { getCartItems, createCart, deleteCart, removeproduct }
