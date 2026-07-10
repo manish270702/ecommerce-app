@@ -10,8 +10,11 @@ app.use(express.json())
 app.use(cookieparser())
 app.use(Limiter)
 
+connectDb()
+
 app.use("/orders",orderRoute)
 
-connectDb()
+// return order routes and apis are missing 
+
 
 module.exports  = app

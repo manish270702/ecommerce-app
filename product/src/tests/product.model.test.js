@@ -1,4 +1,4 @@
-const productModel = require('../src/models/product.model');
+const productModel = require('../models/product.model');
 
 describe('Product model', () => {
   test('exports a Mongoose model named Product and has expected schema paths', () => {

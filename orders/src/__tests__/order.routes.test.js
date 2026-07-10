@@ -1,10 +1,10 @@
 const axios = require('axios');
-const orderModel = require('../src/model/order.model');
-const { getorders, createOrder } = require('../src/controller/order.controllers');
-const { validate } = require('../src/middlewares/checklogin.middleware');
+const orderModel = require('../model/order.model');
+const { getorders, createOrder } = require('../controller/order.controllers');
+const { validate } = require('../middlewares/checklogin.middleware');
 const jwt = require('jsonwebtoken');
 
-jest.mock('../src/model/order.model', () => ({
+jest.mock('../model/order.model', () => ({
   find: jest.fn(),
   findOne: jest.fn(),
   create: jest.fn(),

@@ -1,15 +1,15 @@
-jest.mock('../src/models/product.model', () => ({
+jest.mock('../models/product.model', () => ({
   create: jest.fn(),
   findOneAndDelete: jest.fn()
 }));
 
-jest.mock('../src/services/ImageKit', () => ({
+jest.mock('../services/ImageKit', () => ({
   upload: jest.fn()
 }));
 
-const productModel = require('../src/models/product.model');
-const imagekit = require('../src/services/ImageKit');
-const { createProduct, deleteProduct } = require('../src/controllers/Product.controller');
+const productModel = require('../models/product.model');
+const imagekit = require('../services/ImageKit');
+const { createProduct, deleteProduct } = require('../controllers/Product.controller');
 
 describe('Product.controller', () => {
   beforeEach(() => {

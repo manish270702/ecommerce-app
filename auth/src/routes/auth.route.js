@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, refreshToken,admin } = require("../controllers/auth.controllers");
+const { register, login, refreshUserToken,admin, me } = require("../controllers/auth.controllers");
 const passport = require("passport");
 const router = express.Router()
 
@@ -14,8 +14,13 @@ router.post("/admin/register",
     admin
 )
 
-router.post("/refreshToken",
-    refreshToken
+router.get("/refreshToken",
+    refreshUserToken
+);
+
+
+router.get("/me",
+    me
 );
 
 

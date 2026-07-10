@@ -1,4 +1,4 @@
-const imagekit = require('../src/services/ImageKit');
+const imagekit = require('../services/ImageKit');
 
 describe('ImageKit service', () => {
   test('exposes an upload function', () => {

@@ -1,7 +1,12 @@
+import axios from "axios/unsafe/axios.js";
 import { useForm } from "react-hook-form";
 import { FiUser, FiMail, FiPhone, FiLock } from "react-icons/fi";
+import { useDispatch, useSelector } from 'react-redux';
+import { mountUser } from "../store/reducers/User.Slice";
+import { Link } from "react-router-dom"
+import { mountToken } from "../store/reducers/Token.Slice";
 
-function RegisterForm(){
+function RegisterForm() {
 
     const {
         register,
@@ -10,10 +15,28 @@ function RegisterForm(){
         watch
     } = useForm();
 
+    const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.value)
+
     const password = watch("password");
 
-    const onSubmit = (data) => {
-        console.log(data);
+    const onSubmit = async (data) => {
+        try {
+            console.log("Sending data:", data);
+            const res = await axios.post("http://localhost:3000/api/auth/register", data, {
+                withCredentials: true,
+            });
+            console.log("Success response:", res.data);
+
+            dispatch(mountUser(res.data.user))
+            dispatch(mountToken(res.data.accessToken))
+
+
+            // Handle successful login here (e.g., redirect user)
+        } catch (error) {
+            console.error("Login failed:", error.response?.data || error.message);
+            // Handle error UI here (e.g., show "Invalid credentials" alert)
+        }
     };
 
     return (
@@ -215,7 +238,22 @@ function RegisterForm(){
                         Create Account
                     </button>
 
+
+
                 </form>
+
+                <div className="text-center text-sm">
+
+                    Already have an account?{" "}
+
+                    <Link
+                        to="/"
+                        className="font-semibold text-blue-600 hover:underline"
+                    >
+                        Login Account
+                    </Link>
+
+                </div>
             </div>
 
         </div>

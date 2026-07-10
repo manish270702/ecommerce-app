@@ -1,8 +1,15 @@
 import { useForm } from "react-hook-form";
 import { FiLock, FiMail, FiPhone } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from './../../node_modules/axios/lib/axios';
+import { useDispatch, useSelector } from "react-redux";
+import { mountUser } from "../store/reducers/User.Slice";
+import { mountToken } from "../store/reducers/Token.Slice";
 
 function LoginForm() {
+    const dispatch = useDispatch()
+    const user = useSelector((state) => state.user.value)
+    const navigate = useNavigate()
 
     const {
         register,
@@ -10,8 +17,30 @@ function LoginForm() {
         formState: { errors }
     } = useForm();
 
-    const onSubmit = (data) => {
-        console.log(data);
+    
+    
+
+    const onSubmit = async (data) => {
+        try {
+            // console.log("Sending data:", data);
+            const res = await axios.post("http://localhost:3000/api/auth/login", data, {
+                withCredentials: true,
+            });
+            // console.log("Success response:", res.data);
+
+            // localStorage.setItem("accessToken",res.data.accessToken)
+
+            dispatch(mountUser(res.data.user))
+            dispatch(mountToken(res.data.accessToken))
+            
+            navigate("/update-profile")
+            // Handle successful login here (e.g., redirect user)
+        } catch (error) {
+            console.error("Login failed:", error.response?.data || error.message);
+            // Handle error UI here (e.g., show "Invalid credentials" alert)
+
+
+        }
     };
 
     return (
@@ -114,9 +143,9 @@ function LoginForm() {
 
                     {/* Remember + Forgot */}
 
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-end items-center text-sm">
 
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        {/* <label className="flex items-center gap-2 cursor-pointer">
 
                             <input
                                 type="checkbox"
@@ -125,7 +154,7 @@ function LoginForm() {
 
                             Remember Me
 
-                        </label>
+                        </label> */}
 
                         <Link
                             to="/forgot-password"
@@ -149,7 +178,7 @@ function LoginForm() {
 
                     <div className="text-center text-sm">
 
-                        Don't have an account?{" "}
+                        Don't have an account?
 
                         <Link
                             to="/register"
