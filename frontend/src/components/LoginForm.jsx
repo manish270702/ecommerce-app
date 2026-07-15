@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { FiLock, FiMail, FiPhone } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
-import axios from './../../node_modules/axios/lib/axios';
+import axios from 'axios';
 import { useDispatch, useSelector } from "react-redux";
 import { mountUser } from "../store/reducers/User.Slice";
 import { mountToken } from "../store/reducers/Token.Slice";

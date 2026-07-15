@@ -120,7 +120,7 @@ const refreshUserToken = async (req, res) => {
     try {
         // 1. Check if the token cookie exists
         const tokenFromCookie = req.cookies?.token;
-        
+
         if (!tokenFromCookie) {
             return res.status(401).json({ message: "Refresh token missing" });
         }
@@ -168,6 +168,56 @@ const refreshUserToken = async (req, res) => {
         console.error("Refresh token error:", error.message);
         return res.status(403).json({ message: "Invalid or expired refresh token" });
     }
+};
+
+const updateUser = async (req, res) => {
+    try {
+        const id = req.user.id;
+
+        const user = await usermodel.findOneAndUpdate(
+            { _id: id },
+            req.body,
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        res.status(200).json({
+            message: "User updated successfully",
+            user,
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message,
+        });
+    }
+};
+
+const updateAddress = async (req, res) => {
+  try {
+    const id = req.user.id;
+
+    const user = await usermodel.findByIdAndUpdate(
+      id,
+      {
+        address: req.body.address,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({
+      message: "Address updated successfully",
+      user,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 };
 
 
@@ -253,4 +303,4 @@ const logout = async (req, res) => {
     return res.status(200).json({ message: 'logged out successfully' })
 }
 
-module.exports = { register, login, refreshUserToken, admin, me, logout }
+module.exports = { register, login, refreshUserToken, admin, me, logout, updateUser,updateAddress }

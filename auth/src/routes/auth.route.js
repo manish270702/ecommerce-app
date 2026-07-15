@@ -1,7 +1,8 @@
 const express = require("express");
-const { register, login, refreshUserToken,admin, me } = require("../controllers/auth.controllers");
+const { register, login, refreshUserToken,admin, me,updateUser, updateAddress } = require("../controllers/auth.controllers");
 const passport = require("passport");
 const router = express.Router()
+const validate = require("../middlewares/checklogin.middleware")
 
 router.post("/register",
     register
@@ -23,18 +24,27 @@ router.get("/me",
     me
 );
 
-
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+router.patch("/update",
+    validate,
+    updateUser
+);
+router.post("/update-address",
+    validate,
+    updateAddress
 );
 
-router.get('/auth/google/callback',
-  passport.authenticate('google', { session: false }),
-  (req, res) => {
-    // Generate a JWT for the authenticated user
-    const token = jwt.sign({ id: req.user.id, displayName: req.user.displayName }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    // Send the token to the client
-    res.json({ token });
-  }
-);
+
+// router.get('/google',
+//   passport.authenticate('google', { scope: ['profile', 'email'] })
+// );
+
+// router.get('/auth/google/callback',
+//   passport.authenticate('google', { session: false }),
+//   (req, res) => {
+//     // Generate a JWT for the authenticated user
+//     const token = jwt.sign({ id: req.user.id, displayName: req.user.displayName }, process.env.JWT_SECRET, { expiresIn: '1h' });
+//     // Send the token to the client
+//     res.json({ token });
+//   }
+// );
 module.exports = router

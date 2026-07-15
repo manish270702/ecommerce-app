@@ -5,7 +5,7 @@ const initialState = {
 }
 
 export const tokenSlice = createSlice({
-  name: 'user',
+  name: 'token',
   initialState,
   reducers: {
     mountToken: (state,action) => {

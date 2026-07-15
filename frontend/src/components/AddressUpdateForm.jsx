@@ -1,20 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios"
+import { mountUser } from "../store/reducers/User.Slice";
 
 function AddressUpdateForm() {
   const [isEditing, setIsEditing] = useState(false);
+  const dispatch = useDispatch()
 
   // Data from API
-  const address = {
-    _id: "123",
-    pincode: "302012",
-    state: "Rajasthan",
-    city: "Jaipur",
-    area: "Vaishali Nagar",
-    landmark: "Near National Handloom",
-    addresstype: "Home",
-    isDefaultaddresstype: true,
-  };
+  const user = useSelector(state => state.user.value)
+  const token = useSelector(state => state.token.value)
+
 
   const {
     register,
@@ -22,19 +19,49 @@ function AddressUpdateForm() {
     reset,
     formState: { errors },
   } = useForm({
-    defaultValues: address,
+    values: user?.address || {
+      pincode: "",
+      state: "",
+      city: "",
+      area: "",
+      landmark: "",
+      addresstype: "Home",
+      isDefaultaddresstype: true,
+    }
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
 
-    // await axios.put(`/api/address/${address._id}`, data)
+      ;
+      const updatedAddress = {
+        ...user.address,
+        ...data
+      };
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/update-address",
+        { address: updatedAddress },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setIsEditing(false);
+      
+      if (res.status === 200) {
+        dispatch(mountUser(res.data.user));
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Update Failed:", error);
+    }
   };
-
+  console.log("Updated User:", user);
+  
   const handleCancel = () => {
-    reset(address);
+    reset(user.address);
     setIsEditing(false);
   };
 
@@ -79,11 +106,10 @@ function AddressUpdateForm() {
                 message: "Enter valid pincode",
               },
             })}
-            className={`w-full border rounded-lg p-2 ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           />
 
           {errors.pincode && (
@@ -106,11 +132,10 @@ function AddressUpdateForm() {
             {...register("state", {
               required: "State is required",
             })}
-            className={`w-full border rounded-lg p-2 ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           />
         </div>
 
@@ -127,11 +152,10 @@ function AddressUpdateForm() {
             {...register("city", {
               required: "City is required",
             })}
-            className={`w-full border rounded-lg p-2 ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           />
         </div>
 
@@ -148,11 +172,10 @@ function AddressUpdateForm() {
             {...register("area", {
               required: "Area is required",
             })}
-            className={`w-full border rounded-lg p-2 ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           />
         </div>
 
@@ -169,11 +192,10 @@ function AddressUpdateForm() {
             {...register("landmark", {
               required: "Landmark is required",
             })}
-            className={`w-full border rounded-lg p-2 resize-none ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 resize-none ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           />
         </div>
 
@@ -187,11 +209,10 @@ function AddressUpdateForm() {
           <select
             disabled={!isEditing}
             {...register("addresstype")}
-            className={`w-full border rounded-lg p-2 ${
-              !isEditing
-                ? "bg-gray-100 cursor-not-allowed"
-                : ""
-            }`}
+            className={`w-full border rounded-lg p-2 ${!isEditing
+              ? "bg-gray-100 cursor-not-allowed"
+              : ""
+              }`}
           >
             <option value="Home">Home</option>
             <option value="Office">Office</option>

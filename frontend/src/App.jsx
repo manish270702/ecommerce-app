@@ -10,6 +10,7 @@ import axios from 'axios/unsafe/axios.js'
 import { useEffect } from 'react'
 import { mountUser } from './store/reducers/User.Slice'
 import { useDispatch, useSelector } from 'react-redux'
+import { mountToken } from './store/reducers/Token.Slice'
 const App = () => {
 
   const dispatch = useDispatch()
@@ -20,7 +21,7 @@ const App = () => {
       withCredentials: true
     })
     dispatch(mountUser(res.data.user))
-
+    dispatch(mountToken(res.data.accessToken))
   }
 
   useEffect(() => {

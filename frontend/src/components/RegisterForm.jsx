@@ -1,4 +1,4 @@
-import axios from "axios/unsafe/axios.js";
+import axios from 'axios';
 import { useForm } from "react-hook-form";
 import { FiUser, FiMail, FiPhone, FiLock } from "react-icons/fi";
 import { useDispatch, useSelector } from 'react-redux';

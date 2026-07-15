@@ -2,9 +2,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import axios from "axios/unsafe/axios.js";
+import { useSelector } from "react-redux";
 
 function CreateProduct() {
   const [step, setStep] = useState(1);
+
+  const token = useSelector(state=>state.token.value)
 
   const {
     register,
@@ -105,9 +109,15 @@ function CreateProduct() {
     });
 
     // axios request
-    // await axios.post("/api/products/create", formData)
+    const res = await axios.post("http://localhost:3002/api/products/createProduct", formData,{
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    })
 
-    console.log("Ready to send");
+    console.log(res);
   };
 
   return (

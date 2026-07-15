@@ -1,49 +1,88 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { mountUser } from "../store/reducers/User.Slice";
 
 function ProfileForm() {
   const [isEditing, setIsEditing] = useState(false);
-  const user = useSelector(state => state.user.value); 
 
-  console.log("Current Redux User:", user);
+  const user = useSelector((state) => state.user.value);
+  const token = useSelector((state) => state.token.value);
+  const dispatch = useDispatch();
 
   const {
     register,
     handleSubmit,
     reset,
   } = useForm({
-    // 1. Swapping "defaultValues" with "values" enables reactive async binding
-    values: {
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
     },
   });
 
+  // Update form whenever Redux user changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user, reset]);
+
   const onSubmit = async (data) => {
-    console.log("Updated Data:", data);
-    // await axios.put("/api/user/update", data);
-    setIsEditing(false);
+    try {
+      const formData = {};
+
+      formData.name = data.name;
+      formData.phone = data.phone;
+
+      if (data.avatar && data.avatar.length > 0) {
+        formData.avatar = data.avatar[0];
+      }
+
+      const res = await axios.patch(
+        "http://localhost:3000/api/auth/update",
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Updated User:", res.data.user);
+
+      if (res.status === 200) {
+        dispatch(mountUser(res.data.user));
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Update Failed:", error);
+    }
   };
 
   const handleCancel = () => {
-    // 2. Prevent application crash by safely reading data values
     reset({
       name: user?.name || "",
       email: user?.email || "",
       phone: user?.phone || "",
     });
+
     setIsEditing(false);
   };
 
-  // 3. Fallback visual state while Redux hydration takes place
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-100 flex justify-center items-center">
-        <div className="text-xl font-semibold animate-pulse text-gray-600">
-          Loading user profile...
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <h2 className="text-xl font-semibold animate-pulse">
+          Loading Profile...
+        </h2>
       </div>
     );
   }
@@ -51,10 +90,9 @@ function ProfileForm() {
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center p-5">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
-
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Profile</h1>
+
           {!isEditing && (
             <button
               type="button"
@@ -67,40 +105,47 @@ function ProfileForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-4">
+          {/* <div className="flex flex-col items-center gap-4">
             <img
-              src={user?.avatar || "https://placeholder.com"}
+              src={
+                user.avatar ||
+                "https://placehold.co/150x150"
+              }
               alt="avatar"
               className="w-28 h-28 rounded-full object-cover border"
             />
+
             {isEditing && (
               <input
                 type="file"
                 accept="image/*"
                 {...register("avatar")}
-                className="text-sm"
               />
             )}
-          </div>
+          </div> */}
 
-          {/* Name */}
           <div>
-            <label className="block mb-2 font-medium">Full Name</label>
+            <label className="block mb-2 font-medium">
+              Full Name
+            </label>
+
             <input
               type="text"
               disabled={!isEditing}
               {...register("name")}
               className={`w-full border rounded-lg p-3 ${
-                !isEditing ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                !isEditing
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : "bg-white"
               }`}
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block mb-2 font-medium">Email</label>
+            <label className="block mb-2 font-medium">
+              Email
+            </label>
+
             <input
               type="email"
               disabled
@@ -109,20 +154,23 @@ function ProfileForm() {
             />
           </div>
 
-          {/* Phone */}
           <div>
-            <label className="block mb-2 font-medium">Phone Number</label>
+            <label className="block mb-2 font-medium">
+              Phone Number
+            </label>
+
             <input
               type="text"
               disabled={!isEditing}
               {...register("phone")}
               className={`w-full border rounded-lg p-3 ${
-                !isEditing ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                !isEditing
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : "bg-white"
               }`}
             />
           </div>
 
-          {/* Buttons */}
           {isEditing && (
             <div className="flex gap-4 pt-4">
               <button
@@ -131,6 +179,7 @@ function ProfileForm() {
               >
                 Save Changes
               </button>
+
               <button
                 type="button"
                 onClick={handleCancel}
@@ -140,7 +189,6 @@ function ProfileForm() {
               </button>
             </div>
           )}
-
         </form>
       </div>
     </div>
