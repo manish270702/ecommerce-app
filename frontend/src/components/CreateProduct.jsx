@@ -2,19 +2,23 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import axios from "axios/unsafe/axios.js";
+import axios from "axios";
 import { useSelector } from "react-redux";
 
 function CreateProduct() {
   const [step, setStep] = useState(1);
 
   const token = useSelector(state=>state.token.value)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    reset,
     setValue,
     trigger,
   } = useForm({
@@ -31,20 +35,11 @@ function CreateProduct() {
   });
 
   // Dummy categories
-  const categories = [
-    {
-      _id: "1",
-      name: "Perfume",
-    },
-    {
-      _id: "2",
-      name: "Shoes",
-    },
-    {
-      _id: "3",
-      name: "Clothing",
-    },
-  ];
+
+  const category = useSelector((state) => state.category.value);
+  const categories = category;
+
+  // fetch from redux store
 
   const images = watch("images");
 
@@ -89,35 +84,47 @@ function CreateProduct() {
   };
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      setIsSubmitting(true);
+      setSubmitError("");
+      setSubmitSuccess(false);
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    formData.append("title", data.title);
-    formData.append("description", data.description);
-    formData.append("brand", data.brand);
-    formData.append("category", data.category);
-    formData.append("price", data.price);
-    formData.append(
-      "discountPercentage",
-      data.discountPercentage || 0
-    );
-    formData.append("stock", data.stock);
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("brand", data.brand);
+      formData.append("category", data.category);
+      formData.append("price", data.price);
+      formData.append(
+        "discountPercentage",
+        data.discountPercentage || 0
+      );
+      formData.append("stock", data.stock);
 
-    data.images.forEach((image) => {
-      formData.append("images", image);
-    });
+      data.images.forEach((image) => {
+        formData.append("images", image);
+      });
 
-    // axios request
-    const res = await axios.post("http://localhost:3002/api/products/createProduct", formData,{
-      withCredentials: true,
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
-    })
+      const res = await axios.post("http://localhost:3002/api/products/createProduct", formData,{
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    console.log(res);
+      if (res.status === 201 || res.status === 200) {
+        reset()
+        setStep(1);
+        setSubmitSuccess(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setSubmitError(err.response?.data?.message || err.message || "Unable to create product");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -128,6 +135,22 @@ function CreateProduct() {
         <h1 className="text-3xl font-bold mb-8">
           Create Product
         </h1>
+
+        {isSubmitting && (
+          <div className="mb-6 rounded-lg bg-yellow-100 border border-yellow-300 p-4 text-yellow-800">
+            Uploading product images and saving your product. Please wait...
+          </div>
+        )}
+        {submitError && (
+          <div className="mb-6 rounded-lg bg-red-100 border border-red-300 p-4 text-red-800">
+            {submitError}
+          </div>
+        )}
+        {submitSuccess && (
+          <div className="mb-6 rounded-lg bg-green-100 border border-green-300 p-4 text-green-800">
+            Product created successfully.
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="flex gap-3 mb-10">
@@ -374,9 +397,10 @@ function CreateProduct() {
             ) : (
               <button
                 type="submit"
-                className="px-8 py-3 bg-green-600 text-white rounded-lg"
+                disabled={isSubmitting}
+                className={`px-8 py-3 rounded-lg text-white ${isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}
               >
-                Create Product
+                {isSubmitting ? "Uploading..." : "Create Product"}
               </button>
             )}
           </div>

@@ -33,7 +33,7 @@ function LoginForm() {
             dispatch(mountUser(res.data.user))
             dispatch(mountToken(res.data.accessToken))
             
-            navigate("/update-profile")
+            navigate("/home")
             // Handle successful login here (e.g., redirect user)
         } catch (error) {
             console.error("Login failed:", error.response?.data || error.message);

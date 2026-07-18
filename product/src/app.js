@@ -9,7 +9,6 @@ const limiter = require("./services/Limiter")
 const app = express()
 connectDb()
 
-app.use(limiter)
 app.use(cookieparser())
 app.use(express.json())
 
@@ -17,6 +16,7 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true               
 }));
+app.use(limiter)
 
 app.use("/api/products", productRoutes)
 app.use("/api/category", categoryRoutes)

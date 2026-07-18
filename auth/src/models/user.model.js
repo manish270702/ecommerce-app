@@ -47,33 +47,33 @@ const userSchema = new mongoose.Schema({
     address: {
         pincode: {
             type: String,
-            required: true
+            // required: true
         },
         state: {
             type: String,
-            required: true
+            // required: true
         },
         city: {
             type: String,
-            required: true
+            // required: true
         },
         area: {
             type: String,
-            required: true
+            // required: true
         },
         landmark: {
             type: String,
-            required: true
+            // required: true
         },
         addresstype: {
             type: String,
             enum: ["Home", "Office"],
-            required: true
+            // required: true
         },
         isDefaultaddresstype: {
             type: Boolean,
             default: false,
-            required: true
+            // required: true
         }
     }
 }, {

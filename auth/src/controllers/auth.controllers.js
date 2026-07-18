@@ -13,7 +13,6 @@ const register = async (req, res) => {
 
     }
 
-
     const isExisting = await usermodel.findOne({ email })
 
     const hashedpassword = await bcrypt.hash(password, 10);
@@ -46,7 +45,7 @@ const register = async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    console.log(refreshToken)
+    // console.log(refreshToken)
 
 
     res.status(200).json({
@@ -104,7 +103,7 @@ const login = async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    console.log(refreshToken)
+    // console.log(refreshToken)
 
     res.status(200).json({
         message: "user logined successfully",

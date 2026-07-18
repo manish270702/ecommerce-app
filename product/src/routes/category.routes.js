@@ -9,7 +9,7 @@ router.get("/allCategory", get_categories)
 
 router.post("/createCategory",
     validate_admin,
-    upload.single("images"),
+    upload.single("image"),
     category
 )
 

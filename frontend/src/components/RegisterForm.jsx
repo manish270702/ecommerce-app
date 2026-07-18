@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { FiUser, FiMail, FiPhone, FiLock } from "react-icons/fi";
 import { useDispatch, useSelector } from 'react-redux';
 import { mountUser } from "../store/reducers/User.Slice";
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { mountToken } from "../store/reducers/Token.Slice";
 
 function RegisterForm() {
@@ -14,6 +14,8 @@ function RegisterForm() {
         formState: { errors },
         watch
     } = useForm();
+
+    const navigate = useNavigate();
 
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.value)
@@ -30,6 +32,8 @@ function RegisterForm() {
 
             dispatch(mountUser(res.data.user))
             dispatch(mountToken(res.data.accessToken))
+
+            navigate("/home")
 
 
             // Handle successful login here (e.g., redirect user)

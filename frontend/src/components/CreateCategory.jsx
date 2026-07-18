@@ -1,28 +1,39 @@
 import { useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { mountCategory } from "../store/reducers/Category.Slice";
 
 function CreateCategory() {
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm();
 
+  const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.token.value);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const image = watch("image");
 
-  // Example Parent Categories
-  const parentCategories = [
-    {
-      _id: "1",
-      name: "Fashion",
-    },
-    {
-      _id: "2",
-      name: "Electronics",
-    },
-  ];
+  const getCategories = async () => {
+    const res = await axios.get("http://localhost:3002/api/category/allCategory", {
+      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch(mountCategory(res.data.unique_category));
+  };
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -36,29 +47,54 @@ function CreateCategory() {
     },
   });
 
+
+  useEffect(() => {
+    if (token) {
+      getCategories();
+    }
+  }, [token]);
+
   const onSubmit = async (data) => {
-    const formData = new FormData();
+    try {
+      setIsSubmitting(true);
+      setSubmitError("");
+      setSubmitSuccess(false);
 
-    formData.append("name", data.name);
-    formData.append("slug", data.slug);
-    formData.append("description", data.description);
-    formData.append("isActive", data.isActive);
+      const formData = new FormData();
 
-    if (data.parentCategory) {
-      formData.append(
-        "parentCategory",
-        data.parentCategory
+      formData.append("name", data.name);
+      formData.append("slug", data.slug);
+      formData.append("description", data.description);
+      formData.append("isActive", data.isActive);
+
+      if (data.image) {
+        formData.append("image", data.image);
+      }
+
+      const res = await axios.post(
+        "http://localhost:3002/api/category/createCategory",
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      if (res.status === 201) {
+        reset();
+        await getCategories();
+        setSubmitSuccess(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setSubmitError(err.response?.data?.message || err.message || "Unable to create category");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (data.image) {
-      formData.append("image", data.image);
-    }
-
-    console.log(data);
-
-    // axios.post("/api/category/create", formData)
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -67,6 +103,12 @@ function CreateCategory() {
         <h1 className="text-3xl font-bold mb-8">
           Create Category
         </h1>
+
+        {isSubmitting && (
+          <div className="mb-6 rounded-lg bg-yellow-100 border border-yellow-300 p-4 text-yellow-800">
+            Uploading category image. Please wait...
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -129,31 +171,6 @@ function CreateCategory() {
             />
           </div>
 
-          {/* Parent Category */}
-          <div>
-            <label className="font-medium">
-              Parent Category
-            </label>
-
-            <select
-              {...register("parentCategory")}
-              className="w-full border p-3 rounded-lg mt-2"
-            >
-              <option value="">
-                None
-              </option>
-
-              {parentCategories.map((category) => (
-                <option
-                  key={category._id}
-                  value={category._id}
-                >
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Image Upload */}
           <div>
             <label className="font-medium">
@@ -193,11 +210,24 @@ function CreateCategory() {
             </label>
           </div>
 
+          {submitError && (
+            <p className="text-red-500 text-sm">
+              {submitError}
+            </p>
+          )}
+
+          {submitSuccess && (
+            <p className="text-green-600 text-sm">
+              Category created successfully.
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-black text-white py-3 rounded-lg"
+            disabled={isSubmitting}
+            className={`w-full py-3 rounded-lg text-white ${isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-black"}`}
           >
-            Create Category
+            {isSubmitting ? "Creating category..." : "Create Category"}
           </button>
         </form>
       </div>

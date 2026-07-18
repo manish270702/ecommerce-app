@@ -11,21 +11,31 @@ import { useEffect } from 'react'
 import { mountUser } from './store/reducers/User.Slice'
 import { useDispatch, useSelector } from 'react-redux'
 import { mountToken } from './store/reducers/Token.Slice'
+import Home from './pages/Home'
+import { mountCategory } from './store/reducers/Category.Slice'
 const App = () => {
 
   const dispatch = useDispatch()
 
   //refresh token ko call karna h
   async function getToken() {
-    const res = await axios.get("http://localhost:3000/api/auth/refreshToken",{
+    const res = await axios.get("http://localhost:3000/api/auth/refreshToken", {
       withCredentials: true
     })
     dispatch(mountUser(res.data.user))
     dispatch(mountToken(res.data.accessToken))
   }
 
+  async function getCategory() {
+    const res = await axios.get("http://localhost:3002/api/category/allCategory", {
+      withCredentials: true
+    })
+    dispatch(mountCategory(res.data.unique_category))
+  }
+
   useEffect(() => {
     getToken()
+    getCategory()
   }, [])
 
   return (
@@ -37,6 +47,7 @@ const App = () => {
       <Route path="/update-address" element={<AddressUpdateForm />} />
       <Route path="/create-product" element={<CreateProduct />} />
       <Route path="/create-category" element={<CreateCategory />} />
+      <Route path="/home" element={<Home />} />
     </Routes>
   )
 }

@@ -5,26 +5,34 @@ const imagekit = require("../services/ImageKit")
 
 const category = async (req, res) => {
     try {
-        const { name, description } = req.body;
-        const file = req.file;
+    const { name, slug, description } = req.body;
+    // console.log(req.body)
+    const file = req.file;
 
-        const result = await imagekit.upload({
-            file: file.buffer.toString("base64"),
-            fileName: `${Date.now()}-${file.originalname}`,
-            folder: "/products/categories"
-        });
+    const alreadyexists = await categorymodel.findOne({ name })
 
-        const categoryData = await categorymodel.create({
-            name,
-            description,
-            createdby:req.user.id,
-            image: result.url
-        });
+    if (alreadyexists) {
+        res.status(409).json({ message: "Category already exists" })
+    }
 
-        res.status(201).json({
-            success: true,
-            category: categoryData
-        });
+    const result = await imagekit.upload({
+        file: file.buffer.toString("base64"),
+        fileName: `${Date.now()}-${file.originalname}`,
+        folder: "/products/categories"
+    });
+
+    const categoryData = await categorymodel.create({
+        name,
+        slug,
+        description,
+        createdby: req.user.id,
+        image: result.url
+    });
+
+    res.status(201).json({
+        success: true,
+        category: categoryData
+    });
 
     } catch (error) {
         res.status(500).json({
@@ -77,7 +85,7 @@ const delete_category = async (req, res) => {
 
 const get_categories = async (req, res) => {
     try {
-        const unique_category = await categorymodel.distinct("name");
+        const unique_category = await categorymodel.find({}, "_id name");
 
         res.status(200).json({
             success: true,
@@ -92,4 +100,4 @@ const get_categories = async (req, res) => {
     }
 }
 
-module.exports = { category, delete_category ,get_categories}
+module.exports = { category, delete_category, get_categories }
