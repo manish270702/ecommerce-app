@@ -12,7 +12,7 @@ const category = async (req, res) => {
     const alreadyexists = await categorymodel.findOne({ name })
 
     if (alreadyexists) {
-        res.status(409).json({ message: "Category already exists" })
+        return res.status(409).json({ message: "Category already exists" })
     }
 
     const result = await imagekit.upload({

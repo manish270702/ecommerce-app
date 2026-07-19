@@ -8,8 +8,20 @@ export const productSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
-    mountProducts: (state,action) => {
-      state.value = action.payload
+    mountProducts: (state, action) => {
+      const incoming = Array.isArray(action.payload)
+        ? action.payload
+        : [action.payload]
+
+      incoming.forEach((product) => {
+        const exists = state.value.some(
+          (existing) => existing._id === product._id
+        )
+
+        if (!exists) {
+          state.value.push(product)
+        }
+      })
     },
   },
 })

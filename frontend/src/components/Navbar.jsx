@@ -11,6 +11,8 @@ function Navbar() {
             <Link to="/update-address">Update Address</Link>
             <Link to="/create-product">Create Product</Link>
             <Link to="/create-category">Create Category</Link>
+            <Link to="/cart">Cart</Link>
+
         </div>
     </div>
   )

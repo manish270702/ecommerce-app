@@ -10,12 +10,18 @@ const limiter = require("./services/Limiter")
 const app = express()
 app.use(cookieparser())
 app.use(express.json());
-app.use(limiter)
 
 connectToDb()
 
-app.use("/cart",cartRoutes)
+app.use(cors({
+    origin: "http://localhost:5173", // Your exact frontend URL
+    credentials: true                // Required to match withCredentials
+}));
 
-console.log(process.env.PORT)
+app.use(limiter)
+
+app.use("/api/cart", cartRoutes)
+
+// console.log(process.env.PORT)
 
 module.exports = app

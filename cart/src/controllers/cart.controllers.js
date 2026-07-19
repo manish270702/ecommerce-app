@@ -16,7 +16,7 @@ const createCart = async (req, res) => {
     try {
         const user = req.user;
         console.log(user.id)
-        const { productid, quantity, price } = req.body;
+        const { productid, quantity, price,stock } = req.body;
 
         if (!user) {
             return res.status(401).json({ message: 'unauthorized' });
@@ -25,7 +25,7 @@ const createCart = async (req, res) => {
         let cart = await cartModel.findOne({ user: user.id });
         console.log(cart)
 
-        if (cart && cart.items.length>0) {
+        if (cart && cart.items.length > 0) {
             // 2. Check if the product already exists inside the user's cart array
             const itemIndex = cart.items.findIndex(item => item.productid == productid);
 
@@ -34,7 +34,7 @@ const createCart = async (req, res) => {
                 cart.items[itemIndex].quantity = Number(quantity);
             } else {
                 // Product doesn't exist: push the new item into the array
-                cart.items.push({ productid, quantity, price });
+                cart.items.push({ productid, quantity, price,stock });
             }
 
             await cart.save();
@@ -43,7 +43,7 @@ const createCart = async (req, res) => {
         } else {
             const newCart = await cartModel.create({
                 user: user.id,
-                items: [{ productid, quantity, price }]
+                items: [{ productid, quantity, price,stock }]
             });
 
             return res.status(201).json({ message: "Cart created successfully", item: newCart });
@@ -66,7 +66,7 @@ const removeproduct = async (req, res) => {
 
     if (!user) return res.status(401).json({ message: "Unauthorize access" })
 
-    const cart =await cartModel.findOne({ user: user.id })
+    const cart = await cartModel.findOne({ user: user.id })
     const itemindex = cart.items.findIndex(item => item.productid == id)
     console.log(itemindex)
     cart.items.splice(itemindex, 1)
