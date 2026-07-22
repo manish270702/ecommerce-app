@@ -46,8 +46,8 @@ const App = () => {
           },
         });
         
-        console.log(res.data.items[0].items);
-        dispatch(mountCart(res.data.items[0].items));
+        // console.log(res.data.items[0].items);
+        dispatch(mountCart(res?.data?.items[0]?.items));
       } catch (err) {
         console.log(err);
       }

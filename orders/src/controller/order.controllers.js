@@ -44,28 +44,36 @@ const getorders = async (req, res) => {
 
 
 const createOrder = async (req, res) => {
-    const token = req.headers.authorizaton.split(" ")[1]
+    const token = req.headers.authorization.split(" ")[1];
+
+    // console.log(token)
+
     try {
         if (!req.user) {
             return res.status(401).json({
                 message: "Unauthorized"
             });
         }
-        const data = await axios.get("http://localhost:3001/cart", {
+        const data = await axios.get("http://localhost:3001/api/cart", {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                // credentials:true
             }
         })
+
+        // console.log(data.data)
         const x = data.data.items[0]
 
-        console.log(x)
+
+
+        // console.log(x)
 
         // const { items, totalAmount } = req.body;
 
         const amt = x.items.reduce((sum, item) => {
             return sum + item.price * item.quantity;
         }, 0);
-        console.log(amt)
+        // console.log(amt)
 
         const order = await orderModel.create({
             user: x.user,
@@ -74,7 +82,7 @@ const createOrder = async (req, res) => {
         });
 
         await axios.delete(
-            "http://localhost:3001/cart",
+            "http://localhost:3001/api/cart",
             {
                 headers: {
                     Authorization: `Bearer ${token}`

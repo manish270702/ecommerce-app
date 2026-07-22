@@ -59,7 +59,7 @@ function Product({ product, addTocart, cartItem }) {
       </div>
 
       {/* Content Container */}
-      <div className='p-4 flex flex-col flex-grow'>
+      <div className='p-4 flex flex-col'>
         {/* Title & Description */}
         <h2 className='text-lg font-semibold text-gray-900 mb-2 line-clamp-2'>{product.title}</h2>
         <p className='text-gray-600 text-sm mb-3 line-clamp-2'>{product.description}</p>
@@ -83,7 +83,7 @@ function Product({ product, addTocart, cartItem }) {
         </div>
 
         {/* Quantity Section */}
-        <div className='mb-4 flex-grow'>
+        <div className='mb-4'>
           <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-2">
             Quantity
           </label>

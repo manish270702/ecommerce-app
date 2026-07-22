@@ -1,12 +1,15 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import CartItem from './CartItem'
 import axios from 'axios'
+import { clearcart, mountCart } from '../store/reducers/Cart.Slice'
 
 function Cart() {
     const cart = useSelector((state) => state.cart.value)
     const token = useSelector((state) => state.token.value)
     const [loading, setLoading] = React.useState(false)
+
+    const dispatch = useDispatch()
 
     const calculateTotal = () => {
         return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)
@@ -16,21 +19,22 @@ function Cart() {
         return cart.reduce((sum, item) => sum + item.quantity, 0)
     }
 
+    // console.log(token)
     const handleCheckout = async () => {
         try {
             setLoading(true)
-            const response = await axios.post("http://localhost:3003/order", {}, {
+            const response = await axios.post("http://localhost:3003/api/orders", {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             })
+
             
             // Handle successful order
             console.log('Order created:', response.data)
-            // Clear cart and redirect to orders page
-            // dispatch(clearCart())
-            // navigate('/orders')
+
+            dispatch(clearcart()) // Clear cart in Redux store
         } catch (err) {
             console.error('Checkout error:', err)
             alert(err.response?.data?.message || 'Failed to create order')
