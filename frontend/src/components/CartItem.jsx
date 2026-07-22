@@ -30,7 +30,7 @@ function CartItem({ item }) {
                 return
             }
 
-            
+
 
             const res = await axios.post("http://localhost:3001/api/cart/", {
                 productid: productId,
@@ -54,27 +54,58 @@ function CartItem({ item }) {
         }
     }
 
-    const removeItem = async () => {
+    const removeItem = async (item) => {
         try {
-            setLoading(true)
-            await axios.delete(`http://localhost:3001/api/cart/${item.productid}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            setLoading(true);
+            setError("");
+
+            const res = await axios.delete(
+                `http://localhost:3001/api/cart/${item.productid}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            })
-            // Cart will be updated through Redux or parent component
+            );
+
+            console.log("Delete Response:", res.data);
+
+            // Update Redux immediately
+            dispatch(mountCart(res.data.items));
+
         } catch (err) {
-            console.error(err)
-            setError('Failed to remove item')
+            console.error(err);
+            setError(err.response?.data?.message || "Failed to remove item");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleQuantityChange = (e) => {
-        const newQuantity = parseInt(e.target.value) || 1
-        updateCart(item.productid, newQuantity)
-    }
+        const newQuantity = parseInt(e.target.value) || 1;
+
+        // Update UI immediately
+        setQuantity(newQuantity);
+
+        // Clear previous timer
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        // Send request after 500ms
+        debounceRef.current = setTimeout(() => {
+            updateCart(item.productid, newQuantity);
+        }, 500);
+
+
+        useEffect(() => {
+            return () => {
+                if (debounceRef.current) {
+                    clearTimeout(debounceRef.current);
+                }
+            };
+        }, []);
+    };
 
     const totalPrice = (item.price * quantity).toFixed(2)
     const stockStatus = item.stock === 0 ? 'Out of Stock' : `${item.stock} in stock`
@@ -84,9 +115,9 @@ function CartItem({ item }) {
         <div className="border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             {/* Image Section */}
             <div className="mb-3 h-32 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-                <img 
-                    src={item.images?.[0]} 
-                    alt={item.title} 
+                <img
+                    src={item.images?.[0]}
+                    alt={item.title}
                     className="h-full w-full object-cover"
                 />
             </div>
@@ -145,7 +176,7 @@ function CartItem({ item }) {
 
             {/* Remove Button */}
             <button
-                onClick={removeItem}
+                onClick={() => removeItem(item)}
                 disabled={loading}
                 className="w-full px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

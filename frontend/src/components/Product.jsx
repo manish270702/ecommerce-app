@@ -26,7 +26,7 @@ function Product({ product, addTocart, cartItem }) {
 
     setLoading(true)
     try {
-      await addTocart(product, quantity)
+      await addTocart(product, quantity,discountedPrice)
       setError('')
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add to cart')
@@ -98,7 +98,7 @@ function Product({ product, addTocart, cartItem }) {
               disabled={product.stock === 0}
               className="w-20 px-3 py-2 border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
-            <span className='text-sm text-gray-600'>of {product.stock}</span>
+            
           </div>
         </div>
 

@@ -16,38 +16,55 @@ const createCart = async (req, res) => {
     try {
         const user = req.user;
         console.log(user.id)
-        const { productid, quantity, price,stock } = req.body;
+        const { productid, quantity, price, stock } = req.body;
 
         if (!user) {
             return res.status(401).json({ message: 'unauthorized' });
         }
+        console.log("User ID:", user.id);
 
-        let cart = await cartModel.findOne({ user: user.id });
-        console.log(cart)
+        const cart = await cartModel.findOne({ user: user.id });
 
-        if (cart && cart.items.length > 0) {
-            // 2. Check if the product already exists inside the user's cart array
-            const itemIndex = cart.items.findIndex(item => item.productid == productid);
+        console.log("Existing Cart:", cart);
 
-            if (itemIndex > -1) {
-                // Product exists: increment the quantity
+        if (cart) {
+            const itemIndex = cart.items.findIndex(
+                item => item.productid.toString() === productid.toString()
+            );
+
+            if (itemIndex !== -1) {
                 cart.items[itemIndex].quantity = Number(quantity);
             } else {
-                // Product doesn't exist: push the new item into the array
-                cart.items.push({ productid, quantity, price,stock });
+                cart.items.push({
+                    productid,
+                    quantity,
+                    price,
+                    stock,
+                });
             }
 
             await cart.save();
-            return res.status(200).json({ message: "Cart updated successfully", item: cart });
 
-        } else {
-            const newCart = await cartModel.create({
-                user: user.id,
-                items: [{ productid, quantity, price,stock }]
+            return res.json({
+                message: "Cart updated successfully",
+                item: cart,
             });
-
-            return res.status(201).json({ message: "Cart created successfully", item: newCart });
         }
+
+        const newCart = await cartModel.create({
+            user: user.id,
+            items: [{
+                productid,
+                quantity,
+                price,
+                stock,
+            }],
+        });
+
+        return res.status(201).json({
+            message: "Cart created successfully",
+            item: newCart,
+        });
 
     } catch (err) {
         console.error(err);
@@ -59,26 +76,43 @@ const createCart = async (req, res) => {
 // delete product from cart
 
 const removeproduct = async (req, res) => {
-    const { id } = req.params
-    const user = req.user
+    try {
+        const { id } = req.params;
+        const user = req.user;
 
-    if (!id) return res.status(403).json({ message: "Invalid id" })
+        if (!id) {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
 
-    if (!user) return res.status(401).json({ message: "Unauthorize access" })
+        const cart = await cartModel.findOne({ user: user.id });
 
-    const cart = await cartModel.findOne({ user: user.id })
-    const itemindex = cart.items.findIndex(item => item.productid == id)
-    console.log(itemindex)
-    cart.items.splice(itemindex, 1)
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found" });
+        }
 
-    await cart.save();
+        const itemIndex = cart.items.findIndex(
+            item => item.productid.toString() === id
+        );
 
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: "Product not found in cart" });
+        }
 
+        cart.items.splice(itemIndex, 1);
 
-    return res.status(200).json({ message: "item deleted successsfully" })
+        await cart.save();
 
-}
+        return res.status(200).json({
+            message: "Item deleted successfully",
+            items: cart.items
+        });
 
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+};
 
 // delete whole cart
 
@@ -92,7 +126,10 @@ const deleteCart = async (req, res) => {
 
         let cart = await cartModel.findOneAndDelete({ user: user.id });
 
-        return res.status(200).json({ message: "Cart deleted successfully" })
+        return res.status(200).json({
+            message: "Cart deleted successfully",
+            items: cart.items,
+        })
 
     } catch (err) {
         console.error(err);

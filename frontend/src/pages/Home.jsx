@@ -1,76 +1,76 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
-import axios from "axios"
-import { useEffect } from 'react'
-import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { mountProducts } from '../store/reducers/Product.Slice'
-import Product from '../components/Product'
-import { mountCart } from '../store/reducers/Cart.Slice'
+import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { mountProducts } from "../store/reducers/Product.Slice";
+import { mountCart } from "../store/reducers/Cart.Slice";
+import Product from "../components/Product";
 
 function Home() {
+  const dispatch = useDispatch();
 
-  const token = useSelector((state) => state.token.value)
-  const products = useSelector((state) => state.product.value)
-  const cartitems = useSelector((state) => state.cart.value)
+  const token = useSelector((state) => state.token.value);
+  const products = useSelector((state) => state.product.value);
+  const cartitems = useSelector((state) => state.cart.value);
 
-  const [page, setPage] = useState(1)
-
-  const dispatch = useDispatch()
-
-  // console.log(token)
+  const [page, setPage] = useState(1);
 
   const getProducts = async () => {
     try {
-      let res = await axios.get("http://localhost:3002/api/products/", {
-        query: { page }
-      })
-      console.log(res.data.products)
-      dispatch(mountProducts(res.data.products))
-
-    } catch (err) {
-      console.log(err)
-    }
-  }
-
-  const getCart = async () => {
-    try {
-      const res = await axios.get("http://localhost:3001/api/cart/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get("http://localhost:3002/api/products", {
+        params: { page }, // params, not query
       });
 
-      console.log(res.data.items[0].items);
-      dispatch(mountCart(res.data.items[0].items));
+      dispatch(mountProducts(res.data.products));
     } catch (err) {
       console.log(err);
     }
   };
 
-  const addTocart = async (product, quantity) => {
+  const getCart = async () => {
     try {
-      const res = await axios.post("http://localhost:3001/api/cart/", {
-        productid: product._id,
-        quantity,
-        price: product.price,
-        stock: product.stock
-      }, {
+      const res = await axios.get("http://localhost:3001/api/cart", {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       console.log(res.data);
-      console.log(res.data.item);
-      console.log(res.data.item);
-      console.log(res.data.item.items);
+
+      // Safe extraction
+      const items = res.data.items?.[0]?.items || [];
+
+      dispatch(mountCart(items));
+    } catch (err) {
+      console.log(err);
+      dispatch(mountCart([]));
+    }
+  };
+
+  const addTocart = async (product, quantity, discountedPrice) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:3001/api/cart",
+        {
+          productid: product._id,
+          quantity,
+          price: discountedPrice,
+          stock: product.stock,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(res.data);
 
       dispatch(mountCart(res.data.item.items));
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
   useEffect(() => {
     getProducts();
@@ -85,11 +85,14 @@ function Home() {
   return (
     <div>
       <Navbar />
+
       <div className="grid grid-cols-4 gap-4 p-4">
         {products.map((product) => {
-          const cartItem = cartitems.find(
-            (item) => item.productid === product._id
-          );
+          const cartItem = Array.isArray(cartitems)
+            ? cartitems.find(
+                (item) => item.productid === product._id
+              )
+            : undefined;
 
           return (
             <Product
@@ -102,7 +105,7 @@ function Home() {
         })}
       </div>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;
