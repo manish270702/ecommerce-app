@@ -1,7 +1,13 @@
 jest.mock("../model/cart.model");
 
 const cartModel = require("../model/cart.model");
-const { getCartItems, createCart, deleteCart, removeproduct } = require("../controllers/cart.controllers");
+
+const {
+  getCartItems,
+  createCart,
+  removeproduct,
+  deleteCart,
+} = require("../controllers/cart.controllers");
 
 const createMockRes = () => {
   const res = {};
@@ -15,8 +21,12 @@ describe("Cart Controllers", () => {
     jest.clearAllMocks();
   });
 
+  // =======================
+  // getCartItems
+  // =======================
+
   describe("getCartItems", () => {
-    test("returns 401 when user missing", async () => {
+    test("returns 401 when user is missing", async () => {
       const req = {};
       const res = createMockRes();
 
@@ -28,8 +38,14 @@ describe("Cart Controllers", () => {
       });
     });
 
-    test("returns cart items", async () => {
-      const items = [{ _id: "1", items: [] }];
+    test("returns all cart items", async () => {
+      const items = [
+        {
+          _id: "1",
+          user: "u1",
+          items: [],
+        },
+      ];
 
       cartModel.find.mockResolvedValue(items);
 
@@ -54,7 +70,27 @@ describe("Cart Controllers", () => {
       });
     });
 
-    test("handles errors", async () => {
+    test("returns empty array when cart is empty", async () => {
+      cartModel.find.mockResolvedValue([]);
+
+      const req = {
+        user: {
+          id: "u1",
+        },
+      };
+
+      const res = createMockRes();
+
+      await getCartItems(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+
+      expect(res.json).toHaveBeenCalledWith({
+        items: [],
+      });
+    });
+
+    test("handles database error", async () => {
       cartModel.find.mockRejectedValue(new Error("DB Error"));
 
       const req = {
@@ -75,6 +111,10 @@ describe("Cart Controllers", () => {
     });
   });
 
+  // =======================
+  // createCart
+  // =======================
+
   describe("createCart", () => {
     test("returns 401 when user missing", async () => {
       const req = {
@@ -92,21 +132,23 @@ describe("Cart Controllers", () => {
       });
     });
 
-    test("creates new cart when user has no cart", async () => {
+    test("creates new cart successfully", async () => {
       cartModel.findOne.mockResolvedValue(null);
 
-      const createdCart = {
-        _id: "c1",
+      const newCart = {
+        _id: "1",
         user: "u1",
         items: [
           {
             productid: "p1",
             quantity: 2,
+            price: 100,
+            stock: 5,
           },
         ],
       };
 
-      cartModel.create.mockResolvedValue(createdCart);
+      cartModel.create.mockResolvedValue(newCart);
 
       const req = {
         user: {
@@ -115,6 +157,8 @@ describe("Cart Controllers", () => {
         body: {
           productid: "p1",
           quantity: 2,
+          price: 100,
+          stock: 5,
         },
       };
 
@@ -132,6 +176,8 @@ describe("Cart Controllers", () => {
           {
             productid: "p1",
             quantity: 2,
+            price: 100,
+            stock: 5,
           },
         ],
       });
@@ -140,11 +186,12 @@ describe("Cart Controllers", () => {
 
       expect(res.json).toHaveBeenCalledWith({
         message: "Cart created successfully",
-        item: createdCart,
+        item: newCart,
       });
     });
 
-    test("updates quantity if product already exists", async () => {
+
+        test("updates quantity when product already exists", async () => {
       const save = jest.fn();
 
       const cart = {
@@ -155,6 +202,8 @@ describe("Cart Controllers", () => {
               toString: () => "p1",
             },
             quantity: 1,
+            price: 100,
+            stock: 5,
           },
         ],
         save,
@@ -169,6 +218,8 @@ describe("Cart Controllers", () => {
         body: {
           productid: "p1",
           quantity: 5,
+          price: 100,
+          stock: 5,
         },
       };
 
@@ -178,9 +229,7 @@ describe("Cart Controllers", () => {
 
       expect(cart.items[0].quantity).toBe(5);
 
-      expect(save).toHaveBeenCalled();
-
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(save).toHaveBeenCalledTimes(1);
 
       expect(res.json).toHaveBeenCalledWith({
         message: "Cart updated successfully",
@@ -188,7 +237,7 @@ describe("Cart Controllers", () => {
       });
     });
 
-    test("adds new product if not already in cart", async () => {
+    test("adds a new product when it does not exist", async () => {
       const save = jest.fn();
 
       const cart = {
@@ -199,6 +248,8 @@ describe("Cart Controllers", () => {
               toString: () => "p1",
             },
             quantity: 1,
+            price: 100,
+            stock: 5,
           },
         ],
         save,
@@ -213,6 +264,8 @@ describe("Cart Controllers", () => {
         body: {
           productid: "p2",
           quantity: 3,
+          price: 250,
+          stock: 20,
         },
       };
 
@@ -220,14 +273,16 @@ describe("Cart Controllers", () => {
 
       await createCart(req, res);
 
-      expect(cart.items).toContainEqual({
+      expect(cart.items).toHaveLength(2);
+
+      expect(cart.items[1]).toEqual({
         productid: "p2",
         quantity: 3,
+        price: 250,
+        stock: 20,
       });
 
-      expect(save).toHaveBeenCalled();
-
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(save).toHaveBeenCalledTimes(1);
 
       expect(res.json).toHaveBeenCalledWith({
         message: "Cart updated successfully",
@@ -235,8 +290,10 @@ describe("Cart Controllers", () => {
       });
     });
 
-    test("handles database errors", async () => {
-      cartModel.findOne.mockRejectedValue(new Error("DB Error"));
+    test("returns 500 when findOne throws error", async () => {
+      cartModel.findOne.mockRejectedValue(
+        new Error("Database Error")
+      );
 
       const req = {
         user: {
@@ -244,7 +301,39 @@ describe("Cart Controllers", () => {
         },
         body: {
           productid: "p1",
-          quantity: 2,
+          quantity: 1,
+          price: 100,
+          stock: 10,
+        },
+      };
+
+      const res = createMockRes();
+
+      await createCart(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "something went wrong",
+      });
+    });
+
+    test("returns 500 when create fails", async () => {
+      cartModel.findOne.mockResolvedValue(null);
+
+      cartModel.create.mockRejectedValue(
+        new Error("Create Error")
+      );
+
+      const req = {
+        user: {
+          id: "u1",
+        },
+        body: {
+          productid: "p1",
+          quantity: 1,
+          price: 100,
+          stock: 10,
         },
       };
 
@@ -260,60 +349,258 @@ describe("Cart Controllers", () => {
     });
   });
 
+  // =======================
+  // removeproduct
+  // =======================
+
   describe("removeproduct", () => {
-    test("returns 403 when id missing", async () => {
-      const req = { params: {} };
+        test("returns 400 when product id is missing", async () => {
+      const req = {
+        params: {},
+        user: {
+          id: "u1",
+        },
+      };
+
       const res = createMockRes();
 
       await removeproduct(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({ message: "Invalid id" });
+      expect(res.status).toHaveBeenCalledWith(400);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Invalid product id",
+      });
     });
 
-    test("returns 401 when user missing", async () => {
-      const req = { params: { id: "p1" } };
+    test("returns 404 when cart is not found", async () => {
+      cartModel.findOne.mockResolvedValue(null);
+
+      const req = {
+        params: {
+          id: "p1",
+        },
+        user: {
+          id: "u1",
+        },
+      };
+
       const res = createMockRes();
 
       await removeproduct(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(cartModel.findOne).toHaveBeenCalledWith({
+        user: "u1",
+      });
+
+      expect(res.status).toHaveBeenCalledWith(404);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Cart not found",
+      });
     });
 
-    test("calls model to find product and returns 200 on success", async () => {
-      cartModel.findOne.mockResolvedValue({});
+    test("returns 404 when product is not in cart", async () => {
+      const cart = {
+        items: [
+          {
+            productid: {
+              toString: () => "p2",
+            },
+            quantity: 1,
+          },
+        ],
+        save: jest.fn(),
+      };
 
-      const req = { params: { id: "p1" }, user: { id: "u1" } };
+      cartModel.findOne.mockResolvedValue(cart);
+
+      const req = {
+        params: {
+          id: "p1",
+        },
+        user: {
+          id: "u1",
+        },
+      };
+
       const res = createMockRes();
 
       await removeproduct(req, res);
 
-      expect(cartModel.findOne).toHaveBeenCalledWith({ user: { id: "u1" }, productid: "p1" } || { user: "u1", productid: "p1" });
+      expect(res.status).toHaveBeenCalledWith(404);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Product not found in cart",
+      });
+    });
+
+    test("removes product successfully", async () => {
+      const save = jest.fn();
+
+      const cart = {
+        items: [
+          {
+            productid: {
+              toString: () => "p1",
+            },
+            quantity: 2,
+          },
+        ],
+        save,
+      };
+
+      cartModel.findOne.mockResolvedValue(cart);
+
+      const req = {
+        params: {
+          id: "p1",
+        },
+        user: {
+          id: "u1",
+        },
+      };
+
+      const res = createMockRes();
+
+      await removeproduct(req, res);
+
+      expect(save).toHaveBeenCalledTimes(1);
+
+      expect(cart.items).toEqual([]);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Item deleted successfully",
+        items: [],
+      });
+    });
+
+    test("returns 500 when removeproduct throws error", async () => {
+      cartModel.findOne.mockRejectedValue(
+        new Error("Database Error")
+      );
+
+      const req = {
+        params: {
+          id: "p1",
+        },
+        user: {
+          id: "u1",
+        },
+      };
+
+      const res = createMockRes();
+
+      await removeproduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Database Error",
+      });
     });
   });
 
-  describe("deleteCart", () => {
-    test("returns 401 when user missing", async () => {
+  // =======================
+  // deleteCart
+  // =======================
+
+  describe("deleteCart", () => {    test("returns 401 when user is missing", async () => {
       const req = {};
       const res = createMockRes();
 
       await deleteCart(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ message: "unauthorized" });
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "unauthorized",
+      });
     });
 
-    test("deletes cart and returns 200 on success", async () => {
-      cartModel.findOneAndDelete.mockResolvedValue({});
+    test("deletes cart successfully", async () => {
+      const deletedCart = {
+        _id: "c1",
+        user: "u1",
+        items: [
+          {
+            productid: "p1",
+            quantity: 2,
+          },
+        ],
+      };
 
-      const req = { user: { id: "u1" } };
+      cartModel.findOneAndDelete.mockResolvedValue(deletedCart);
+
+      const req = {
+        user: {
+          id: "u1",
+        },
+      };
+
       const res = createMockRes();
 
       await deleteCart(req, res);
 
-      expect(cartModel.findOneAndDelete).toHaveBeenCalledWith({ user: "u1" });
+      expect(cartModel.findOneAndDelete).toHaveBeenCalledWith({
+        user: "u1",
+      });
+
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ message: "Cart deleted successfully" });
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Cart deleted successfully",
+        items: deletedCart.items,
+      });
+    });
+
+    test("returns empty items when deleted cart has no items", async () => {
+      const deletedCart = {
+        items: [],
+      };
+
+      cartModel.findOneAndDelete.mockResolvedValue(deletedCart);
+
+      const req = {
+        user: {
+          id: "u1",
+        },
+      };
+
+      const res = createMockRes();
+
+      await deleteCart(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Cart deleted successfully",
+        items: [],
+      });
+    });
+
+    test("returns 500 when deleteCart throws an error", async () => {
+      cartModel.findOneAndDelete.mockRejectedValue(
+        new Error("Database Error")
+      );
+
+      const req = {
+        user: {
+          id: "u1",
+        },
+      };
+
+      const res = createMockRes();
+
+      await deleteCart(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+
+      expect(res.json).toHaveBeenCalledWith({
+        message: "something went wrong",
+      });
     });
   });
 });

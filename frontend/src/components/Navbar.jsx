@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const role = useSelector((state) => state.user.value.role)
+  // console.log(role)
 
   return (
     <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
+      <div className=" flex justify-between items-center p-4">
         {/* Logo */}
         <Link to="/" className="text-xl font-bold">
           Ecommerce App
@@ -14,12 +17,15 @@ function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-6 items-center">
-          <Link to="/register">Register</Link>
-          <Link to="/">Login</Link>
-          <Link to="/update-profile">Update Profile</Link>
-          <Link to="/update-address">Update Address</Link>
-          <Link to="/create-product">Create Product</Link>
-          <Link to="/create-category">Create Category</Link>
+          {/* <Link to="/register">Register</Link>
+          <Link to="/">Login</Link> */}
+          {role === "admin" && <>
+            <Link to="/update-profile">Update Profile</Link>
+            <Link to="/update-address">Update Address</Link>
+            <Link to="/create-product">Create Product</Link>
+            <Link to="/create-category">Create Category</Link>
+          </>
+          }
           <Link to="/cart">Cart</Link>
         </div>
 
@@ -35,12 +41,12 @@ function Navbar() {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden flex flex-col gap-4 px-4 pb-4">
-          <Link to="/register" onClick={() => setOpen(false)}>
+          {/* <Link to="/register" onClick={() => setOpen(false)}>
             Register
           </Link>
           <Link to="/" onClick={() => setOpen(false)}>
             Login
-          </Link>
+          </Link> */}
           <Link to="/update-profile" onClick={() => setOpen(false)}>
             Update Profile
           </Link>

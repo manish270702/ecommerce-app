@@ -13,17 +13,25 @@ const getCartItems = async (req, res) => {
 }
 
 const createCart = async (req, res) => {
+
     try {
         const user = req.user;
-        console.log(user.id)
-        const { productid, quantity, price, stock } = req.body;
 
         if (!user) {
-            return res.status(401).json({ message: 'unauthorized' });
+            return res.status(401).json({
+                message: "unauthorized",
+            });
         }
+
+        console.log(user.id);
+
+        const { productid, quantity, price, stock } = req.body;
+
         console.log("User ID:", user.id);
 
-        const cart = await cartModel.findOne({ user: user.id });
+        const cart = await cartModel.findOne({
+            user: user.id,
+        });
 
         console.log("Existing Cart:", cart);
 
@@ -79,6 +87,12 @@ const removeproduct = async (req, res) => {
     try {
         const { id } = req.params;
         const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({
+                message: "unauthorized",
+            });
+        }
 
         if (!id) {
             return res.status(400).json({ message: "Invalid product id" });

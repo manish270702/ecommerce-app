@@ -22,5 +22,4 @@ app.use("/api/products", productRoutes)
 app.use("/api/category", categoryRoutes)
 
 
-
 module.exports = app

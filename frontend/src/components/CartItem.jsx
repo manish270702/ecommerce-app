@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { mountCart } from '../store/reducers/Cart.Slice'
@@ -7,8 +7,20 @@ function CartItem({ item }) {
     const [quantity, setQuantity] = useState(item.quantity)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    const debounceRef = useRef(null);
+
+
     const token = useSelector((state) => state.token.value)
     const dispatch = useDispatch()
+
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, []);
 
     const updateCart = async (productId, newQuantity) => {
         try {
@@ -84,28 +96,18 @@ function CartItem({ item }) {
     const handleQuantityChange = (e) => {
         const newQuantity = parseInt(e.target.value) || 1;
 
-        // Update UI immediately
         setQuantity(newQuantity);
 
-        // Clear previous timer
         if (debounceRef.current) {
             clearTimeout(debounceRef.current);
         }
 
-        // Send request after 500ms
         debounceRef.current = setTimeout(() => {
             updateCart(item.productid, newQuantity);
         }, 500);
-
-
-        useEffect(() => {
-            return () => {
-                if (debounceRef.current) {
-                    clearTimeout(debounceRef.current);
-                }
-            };
-        }, []);
     };
+
+    
 
     const totalPrice = (item.price * quantity).toFixed(2)
     const stockStatus = item.stock === 0 ? 'Out of Stock' : `${item.stock} in stock`

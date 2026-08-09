@@ -3,11 +3,14 @@ const imagekit = require("../services/ImageKit")
 
 // create category
 
+
+
 const category = async (req, res) => {
     try {
     const { name, slug, description } = req.body;
     // console.log(req.body)
     const file = req.file;
+    // console.log(file)
 
     const alreadyexists = await categorymodel.findOne({ name })
 
@@ -20,6 +23,8 @@ const category = async (req, res) => {
         fileName: `${Date.now()}-${file.originalname}`,
         folder: "/products/categories"
     });
+
+    console.log(result)
 
     const categoryData = await categorymodel.create({
         name,
@@ -34,11 +39,16 @@ const category = async (req, res) => {
         category: categoryData
     });
 
-    } catch (error) {
+    } catch (err) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: err.message
         });
+        console.log("Error:", err);
+    console.log("Message:", err.message);
+    console.log("Code:", err.code);
+    console.log("Response:", err.response?.data);
+    console.log("Cause:", err.cause);
     }
 };
 

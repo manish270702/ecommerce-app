@@ -64,7 +64,7 @@ function Cart() {
 
     return (
         <div className='w-full flex flex-col gap-6 p-6 min-h-screen bg-gray-50'>
-            <div className="text-2xl" onClick={()=>navigate(-1)}>←</div>
+            <div className="text-2xl cursor-pointer" onClick={()=>navigate(-1)}>←</div>
             {/* Header */}
             <div className='mb-4'>
                 <h1 className='text-3xl font-bold text-gray-900'>Shopping Cart</h1>
@@ -74,8 +74,8 @@ function Cart() {
             {/* Cart Items Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Cart Items */}
-                <div className={cart?.length > 0 ? "lg:col-span-3" : "lg:col-span-4"}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className={cart?.length > 0 ? "lg:col-span-4" : "lg:col-span-4"}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {cart?.map((item) => (
                             <CartItem key={item.productid} item={item} />
                         ))}
@@ -83,7 +83,7 @@ function Cart() {
                 </div>
 
                 {/* Order Summary */}
-                {cart?.length > 0 && (
+                {/* {cart?.length > 0 && (
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
                             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
@@ -123,7 +123,7 @@ function Cart() {
                             </button>
                         </div>
                     </div>
-                )}
+                )} */}
             </div>
 
             {/* Cart Summary */}
