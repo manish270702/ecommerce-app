@@ -66,6 +66,8 @@ function CartItem({ item }) {
         }
     }
 
+    const dark = useSelector((state) => state.Dark.value)
+
     const removeItem = async (item) => {
         try {
             setLoading(true);
@@ -114,9 +116,9 @@ function CartItem({ item }) {
     const stockClass = item.stock === 0 ? 'text-red-600' : item.stock <= 5 ? 'text-orange-600' : 'text-green-600'
 
     return (
-        <div className="border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+        <div className={`border ${dark ? "border-zinc-600" : "border-gray-200"} p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow`}>
             {/* Image Section */}
-            <div className="mb-3 h-32 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+            <div className={`mb-3 h-32 ${dark ? "bg-zinc-700" : "bg-gray-100"} rounded overflow-hidden flex items-center justify-center`}>
                 <img
                     src={item.images?.[0]}
                     alt={item.title}
@@ -133,25 +135,31 @@ function CartItem({ item }) {
             {/* Price Section */}
             <div className="mb-3 pb-3 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Unit Price:</span>
-                    <span className="font-semibold text-lg text-gray-900">${item.price.toFixed(2)}</span>
+                    <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>Unit Price:</span>
+                    <span className={`font-semibold text-lg ${dark ? "text-gray-300" : "text-gray-900"}`}>
+                        ${item.price.toFixed(2)}
+                    </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-gray-600">Total:</span>
-                    <span className="font-bold text-lg text-blue-600">${totalPrice}</span>
+                    <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
+                        Total:
+                    </span>
+                    <span className={`font-bold text-lg ${dark ? "text-blue-400" : "text-blue-600"}`}>
+                        ${totalPrice}
+                    </span>
                 </div>
             </div>
 
             {/* Stock Status */}
             <div className="mb-4 pb-4 border-b border-gray-200">
-                <p className={`text-sm font-medium ${stockClass}`}>
+                <p className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
                     {stockStatus}
                 </p>
             </div>
 
             {/* Quantity Control */}
             <div className="mb-4">
-                <label htmlFor={`quantity-${item.productid}`} className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor={`quantity-${item.productid}`} className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
                     Quantity
                 </label>
                 <div className="flex items-center gap-2">
@@ -163,15 +171,17 @@ function CartItem({ item }) {
                         value={quantity}
                         onChange={handleQuantityChange}
                         disabled={loading || item.stock === 0}
-                        className="w-16 px-3 py-2 border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className={`w-16 px-3 py-2 border ${dark ? "border-zinc-600 text-zinc-50" : "border-gray-300"} rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed`}
                     />
-                    <span className="text-sm text-gray-600">of {item.stock} available</span>
+                    <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
+                        of {item.stock} available
+                    </span>
                 </div>
             </div>
 
             {/* Error Message */}
             {error && (
-                <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                <div className={`mb-4 p-2 ${dark ? "bg-red-900 border border-red-600 text-red-300" : "bg-red-50 border border-red-200 rounded text-red-700 text-sm"}`}>
                     {error}
                 </div>
             )}
@@ -180,7 +190,7 @@ function CartItem({ item }) {
             <button
                 onClick={() => removeItem(item)}
                 disabled={loading}
-                className="w-full px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full px-4 py-2 ${dark ? "bg-red-900 text-red-300 border border-red-900 hover:bg-red-800" : "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"} rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
                 {loading ? 'Removing...' : 'Remove from Cart'}
             </button>

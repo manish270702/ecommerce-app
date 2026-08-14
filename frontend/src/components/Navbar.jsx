@@ -1,22 +1,33 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { Dark } from "../store/reducers/Dark.Slice";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
   const role = useSelector((state) => state.user.value.role)
-  // console.log(role)
+
+  const dark = useSelector((state) => state.Dark.value)
+
+  const dispatch = useDispatch()
+  const changeTheme = () => {
+    dispatch(Dark(!dark))
+  }
+
+  useEffect(() => {
+    console.log(dark)
+  }, [changeTheme])
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className={`${dark ? "bg-zinc-950 text-zinc-50" : "bg-white text-black"} shadow-md`}>
       <div className=" flex justify-between items-center p-4">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold">
-          Ecommerce App
+        <Link to="/" className="text-xl  font-bold">
+          E-commerce App
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex gap-6 items-center">
+        <div className="hidden md:flex items-center gap-6">
           {/* <Link to="/register">Register</Link>
           <Link to="/">Login</Link> */}
           {role === "admin" && <>
@@ -27,15 +38,23 @@ function Navbar() {
           </>
           }
           <Link to="/cart">Cart</Link>
+          <button className="cursor-pointer" onClick={() => changeTheme()} >
+            dark
+          </button>
         </div>
 
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-2xl"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? "✕" : "☰"}
-        </button>
+        <div className="md:hidden text-2xl flex gap-2">
+          <button className="cursor-pointer" onClick={() => changeTheme()} >
+            dark
+          </button>
+          <button
+
+            onClick={() => setOpen(!open)}
+          >
+            {open ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -64,6 +83,7 @@ function Navbar() {
           </Link>
         </div>
       )}
+
     </nav>
   );
 }

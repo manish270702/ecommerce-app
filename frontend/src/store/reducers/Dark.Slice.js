@@ -1,23 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  value: {
-    
-  },
+  value: localStorage.getItem("dark") || true,
 }
 
-export const userSlice = createSlice({
-  name: 'user',
+export const darkSlice = createSlice({
+  name: 'dark',
   initialState,
   reducers: {
-    mountUser: (state,action) => {
+    Dark: (state,action) => {
       state.value = action.payload
     },
-    
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { mountUser } = userSlice.actions
+export const { Dark } = darkSlice.actions
 
-export default userSlice.reducer
+export default darkSlice.reducer

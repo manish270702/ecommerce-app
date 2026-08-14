@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { mountCategory } from "../store/reducers/Category.Slice";
+import { useNavigate } from "react-router-dom";
 
 function CreateCategory() {
 
@@ -17,6 +18,7 @@ function CreateCategory() {
   } = useForm();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const token = useSelector((state) => state.token.value);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,10 +97,13 @@ function CreateCategory() {
     }
   };
 
+  const dark = useSelector((state) => state.Dark.value)
+
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8">
+    <div className={`min-h-screen ${dark ? "bg-zinc-950 text-white" : "bg-gray-100 text-black"} p-8`}>
+      <div className={`max-w-3xl mx-auto ${dark ? "bg-zinc-800" : "bg-white"} shadow-lg rounded-xl p-8`}>
+        <div onClick={() => navigate(-1)} className={`px-5 py-2 mb-3 w-fit ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"} rounded-lg`} >Back</div>
 
         <h1 className="text-3xl font-bold mb-8">
           Create Category

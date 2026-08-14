@@ -4,6 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function CreateProduct() {
   const [step, setStep] = useState(1);
@@ -12,6 +13,8 @@ function CreateProduct() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const dark = useSelector((state) => state.Dark.value);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -128,10 +131,11 @@ function CreateProduct() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+    <div className={`min-h-screen ${dark ? "bg-zinc-950 text-white" : "bg-gray-100 text-black"} p-8`}>
+      <div className={`max-w-5xl mx-auto ${dark ? "bg-zinc-800" : "bg-white"} shadow-lg rounded-2xl p-8`}>
 
         {/* Header */}
+        <div onClick={() => navigate(-1)} className={`px-5 py-2 mb-3 w-fit ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"} rounded-lg`} >Back</div>
         <h1 className="text-3xl font-bold mb-8">
           Create Product
         </h1>

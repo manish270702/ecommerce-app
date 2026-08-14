@@ -3,10 +3,11 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { mountUser } from "../store/reducers/User.Slice";
+import { useNavigate } from "react-router-dom";
 
 function ProfileForm() {
   const [isEditing, setIsEditing] = useState(false);
-
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.value);
   const token = useSelector((state) => state.token.value);
   const dispatch = useDispatch();
@@ -33,6 +34,8 @@ function ProfileForm() {
       });
     }
   }, [user, reset]);
+
+  const dark = useSelector((state) => state.Dark.value)
 
   const onSubmit = async (data) => {
     try {
@@ -88,8 +91,9 @@ function ProfileForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center p-5">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
+    <div className={`min-h-screen ${dark ? "bg-zinc-950 text-white" : "bg-gray-100 text-black"} flex justify-center items-center p-5`}>
+      <div className={`w-full max-w-2xl ${dark ? "bg-zinc-800" : "bg-white"} rounded-2xl shadow-lg p-8`}>
+        <div onClick={() => navigate(-1)} className={`px-5 py-2 mb-3 w-fit ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"} rounded-lg`} >Back</div>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Profile</h1>
 
@@ -97,7 +101,7 @@ function ProfileForm() {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="bg-black text-white px-5 py-2 rounded-lg"
+              className={`px-5 py-2 rounded-lg ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"}`}
             >
               Edit Profile
             </button>
@@ -137,7 +141,7 @@ function ProfileForm() {
                 !isEditing
                   ? "bg-gray-100 cursor-not-allowed"
                   : "bg-white"
-              }`}
+              } ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"}`}
             />
           </div>
 
@@ -150,7 +154,7 @@ function ProfileForm() {
               type="email"
               disabled
               {...register("email")}
-              className="w-full border rounded-lg p-3 bg-gray-100 cursor-not-allowed"
+              className={`w-full border rounded-lg p-3 bg-gray-100 cursor-not-allowed ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"}`}
             />
           </div>
 
@@ -167,7 +171,7 @@ function ProfileForm() {
                 !isEditing
                   ? "bg-gray-100 cursor-not-allowed"
                   : "bg-white"
-              }`}
+              } ${dark ? "bg-zinc-700 text-white" : "bg-black text-white"}`}
             />
           </div>
 

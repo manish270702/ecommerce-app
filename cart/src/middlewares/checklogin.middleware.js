@@ -32,7 +32,7 @@ const validate = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log(err);
+        console.log(error);
         return res.status(401).json({
             message: "Invalid or expired token"
         });

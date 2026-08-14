@@ -71,10 +71,11 @@ function Home() {
       console.log(err);
     }
   };
+  const dark = useSelector((state) => state.Dark.value)
 
   useEffect(() => {
     getProducts();
-  }, [page]);
+  }, [page,dark]);
 
   useEffect(() => {
     if (token) {
@@ -82,16 +83,17 @@ function Home() {
     }
   }, [token]);
 
+
   return (
-    <div>
+    <div className={`min-h-screen ${dark ? "bg-zinc-950 text-white" : "bg-white text-black"}`}>
       <Navbar />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-3 "> 
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${dark ? "bg-zinc-950 text-white" : "bg-white text-black"} lg:grid-cols-3 xl:grid-cols-4 gap-6 p-3`}>
         {products.map((product) => {
           const cartItem = Array.isArray(cartitems)
             ? cartitems.find(
-                (item) => item.productid === product._id
-              )
+              (item) => item.productid === product._id
+            )
             : undefined;
 
           return (
