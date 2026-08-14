@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { mountProducts } from "../store/reducers/Product.Slice";
 import { mountCart } from "../store/reducers/Cart.Slice";
 import Product from "../components/Product";
+import CartIcon from "../components/CartIcon";
 
 function Home() {
   const dispatch = useDispatch();
@@ -75,7 +76,7 @@ function Home() {
 
   useEffect(() => {
     getProducts();
-  }, [page,dark]);
+  }, [page, dark]);
 
   useEffect(() => {
     if (token) {
@@ -105,6 +106,8 @@ function Home() {
             />
           );
         })}
+        { cartitems.length > 0 && (<CartIcon />)}
+        
       </div>
     </div>
   );

@@ -14,6 +14,8 @@ function Navbar() {
     dispatch(Dark(!dark))
   }
 
+  const cart = useSelector((state) => state.cart.value)
+
   useEffect(() => {
     console.log(dark)
   }, [changeTheme])
@@ -37,16 +39,19 @@ function Navbar() {
             <Link to="/create-category">Create Category</Link>
           </>
           }
-          <Link to="/cart">Cart</Link>
+          <Link to="/cart" className= "relative">Cart
+          {cart.length===0?null:<span className="absolute top-0 -right-4 bg-red-600 rounded-full w-4 h-4 text-xs flex items-center justify-center">{cart.length}</span>
+          }
+          </Link>
           <button className="cursor-pointer" onClick={() => changeTheme()} >
-            dark
+            {dark ? "Light Mode" : "Dark Mode"}
           </button>
         </div>
 
         {/* Mobile Menu Button */}
         <div className="md:hidden text-2xl flex gap-2">
           <button className="cursor-pointer" onClick={() => changeTheme()} >
-            dark
+            {dark ? "Light Mode" : "Dark Mode"}
           </button>
           <button
 

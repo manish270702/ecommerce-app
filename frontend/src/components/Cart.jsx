@@ -58,10 +58,16 @@ function Cart() {
     if (cart?.length === 0) {
         return (
             <>
-                <div className='w-full flex flex-col gap-4 p-4 min-h-screen items-center justify-center'>
-                    <h2 className='text-2xl font-semibold text-gray-900'>Your cart is empty</h2>
-                    <p className='text-gray-600'>Add some products to get started!</p>
-                    <div className="cursor-pointer bg-blue-600 text-white rounded-md px-4 py-2  " onClick={() => navigate(-1)}>Continue Shopping</div>
+                <div className={`w-full flex flex-col ${dark ? "bg-zinc-950" : "bg-gray-50"} gap-4 p-4 min-h-screen items-center justify-center`}>
+                    <h2 className={`${dark ? "text-2xl font-semibold text-gray-300" : "text-2xl font-semibold text-gray-900"}`}>
+                        Your cart is empty
+                    </h2>
+                    <p className={`${dark ? "text-gray-400" : "text-gray-600"}`}>
+                        Add some products to get started!
+                    </p>
+                    <div className="cursor-pointer bg-blue-600 text-white rounded-md px-4 py-2  " onClick={() => navigate(-1)}>
+                        Continue Shopping
+                    </div>
                 </div>
             </>
         )
