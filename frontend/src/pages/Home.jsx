@@ -106,7 +106,7 @@ function Home() {
             />
           );
         })}
-        { cartitems.length > 0 && (<CartIcon />)}
+        { cartitems && cartitems.length > 0 && (<CartIcon />)}
         
       </div>
     </div>

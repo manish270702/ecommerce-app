@@ -1,4 +1,5 @@
 const cartModel = require("../model/cart.model")
+const axios = require("axios");
 
 const getCartItems = async (req, res) => {
     try {
@@ -33,7 +34,15 @@ const createCart = async (req, res) => {
             user: user.id,
         });
 
+        
         console.log("Existing Cart:", cart);
+        
+        
+        const response = await axios.get(
+            `http://localhost:3002/api/products/${productid}`
+        );
+        
+        const product = response.data.product;
 
         if (cart) {
             const itemIndex = cart.items.findIndex(
@@ -48,6 +57,12 @@ const createCart = async (req, res) => {
                     quantity,
                     price,
                     stock,
+                    product: {
+                        title: product.title,
+                        images: product.images,
+                        category: product.category,
+                        description: product.description,
+                    }
                 });
             }
 

@@ -1,5 +1,5 @@
 const express = require('express')
-const { createProduct, deleteProduct,getProducts } = require('../controllers/Product.controller')
+const { createProduct, deleteProduct,getProducts, getSingleProduct } = require('../controllers/Product.controller')
 const upload = require('../middlewares/upload.middleware')
 const validate_admin = require('../middlewares/checkadmin.middleware')
 
@@ -8,6 +8,11 @@ const router = express.Router()
 router.get("/",
     getProducts
 )
+
+router.get("/:id",
+    getSingleProduct
+)
+
 router.post("/createProduct",
     validate_admin,
     upload.array("images", 5),

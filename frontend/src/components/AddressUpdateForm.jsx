@@ -72,7 +72,7 @@ function AddressUpdateForm() {
 
   return (
     <div className={`"max-w-3xl  ${dark? "bg-zinc-950 text-white" :"bg-white "} p-5 shadow-lg flex items-center justify-center"`}>
-      <div className="w-1/2 h-screen p-5 mx-auto border rounded-lg shadow-md">
+      <div className="w-1/2 min-h-screen p-5 mx-auto border rounded-lg shadow-md">
 
         <div onClick={() => navigate(-1)} className={`px-5 py-2 mb-3 w-fit ${dark ? "bg-zinc-800 text-white border" : "bg-black text-white"} rounded-lg`}>
           Back
@@ -257,7 +257,7 @@ function AddressUpdateForm() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="bg-gray-300 px-6 py-2 rounded-lg"
+                className={`bg-gray-300 px-6 py-2 ${dark ? "bg-zinc-700 text-white" : ""} rounded-lg`}
               >
                 Cancel
               </button>

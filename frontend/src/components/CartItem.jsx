@@ -22,6 +22,8 @@ function CartItem({ item }) {
         };
     }, []);
 
+    console.log(item)
+
     const updateCart = async (productId, newQuantity) => {
         try {
             setLoading(true)
@@ -48,7 +50,8 @@ function CartItem({ item }) {
                 productid: productId,
                 quantity: newQuantity,
                 price: item.price,
-                stock: item.stock
+                stock: item.stock,
+                product: item.product
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -109,7 +112,7 @@ function CartItem({ item }) {
         }, 500);
     };
 
-    
+
 
     const totalPrice = (item.price * quantity).toFixed(2)
     const stockStatus = item.stock === 0 ? 'Out of Stock' : `${item.stock} in stock`
@@ -120,16 +123,16 @@ function CartItem({ item }) {
             {/* Image Section */}
             <div className={`mb-3 h-32 ${dark ? "bg-zinc-700" : "bg-gray-100"} rounded overflow-hidden flex items-center justify-center`}>
                 <img
-                    src={item.images?.[0]}
-                    alt={item.title}
+                    src={item.product.images?.[0]}
+                    alt={item.product.title}
                     className="h-full w-full object-cover"
                 />
             </div>
 
             {/* Product Info */}
             <div className="mb-3">
-                <h2 className="font-semibold text-lg text-gray-900 line-clamp-2">{item.title}</h2>
-                <p className="text-gray-600 text-sm line-clamp-2 mt-1">{item.description}</p>
+                <h2 className={`font-semibold text-lg ${dark ? "text-zinc-400" : "text-gray-600"} text-gray-900 line-clamp-2`}>{item.product.title}</h2>
+                <p className={`text-gray-600 ${dark ? "text-zinc-400" : "text-gray-600"} text-sm line-clamp-2 mt-1`}>{item.product.description}</p>
             </div>
 
             {/* Price Section */}
@@ -139,6 +142,26 @@ function CartItem({ item }) {
                     <span className={`font-semibold text-lg ${dark ? "text-gray-300" : "text-gray-900"}`}>
                         ${item.price.toFixed(2)}
                     </span>
+                </div>
+                <div className="mb-4">
+                    <div className="flex items-center gap-2 mt-1 justify-between">
+                        <label htmlFor={`quantity-${item.productid}`} className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
+                            Quantity
+                        </label>
+                        <input
+                            type="number"
+                            id={`quantity-${item.productid}`}
+                            min="1"
+                            max={item.stock}
+                            value={quantity}
+                            onChange={handleQuantityChange}
+                            disabled={loading || item.stock === 0}
+                            className={`w-16 px-3 py-2 border ${dark ? "border-zinc-600 text-zinc-50" : "border-gray-300"} rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                        />
+                        {/* <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
+                        of {item.stock} available
+                    </span> */}
+                    </div>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                     <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
@@ -151,33 +174,14 @@ function CartItem({ item }) {
             </div>
 
             {/* Stock Status */}
-            <div className="mb-4 pb-4 border-b border-gray-200">
+            {/* <div className="mb-4 pb-4 border-b border-gray-200">
                 <p className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
                     {stockStatus}
                 </p>
-            </div>
+            </div> */}
 
             {/* Quantity Control */}
-            <div className="mb-4">
-                <label htmlFor={`quantity-${item.productid}`} className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
-                    Quantity
-                </label>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="number"
-                        id={`quantity-${item.productid}`}
-                        min="1"
-                        max={item.stock}
-                        value={quantity}
-                        onChange={handleQuantityChange}
-                        disabled={loading || item.stock === 0}
-                        className={`w-16 px-3 py-2 border ${dark ? "border-zinc-600 text-zinc-50" : "border-gray-300"} rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed`}
-                    />
-                    <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
-                        of {item.stock} available
-                    </span>
-                </div>
-            </div>
+
 
             {/* Error Message */}
             {error && (

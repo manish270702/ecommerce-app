@@ -1,32 +1,50 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function ProductView() {
 
     const products = useSelector((state) => state.product.value)
     const { id } = useParams()
+    const navigate = useNavigate()
 
+    
     const dark = useSelector((state) => state.Dark.value)
-
+    
     const product = products.find((p) => p._id === id || p.id === id)
     console.log(product)
+    const [preview, setpreview] = useState(product?.images?.[0])
 
     return (
         <div className={`max-w-full min-h-screen ${dark ? "bg-zinc-800 text-white" : "bg-gray-100"} `}>
             <div className="max-w-4xl mx-auto py-8">
-                <div id="img" className={`relative h-96  overflow-hidden flex items-center justify-center border-b border-gray-6
+                <button
+                    onClick={() => navigate(-1)}
+                    className={`mb-4 px-4 py-2 ${dark ? "bg-zinc-700 text-white" : "bg-gray-300"} rounded-lg`}
+                >
+                    ← Back
+                </button>
+                <div id="img" className={`relative h-108  overflow-hidden  items-center justify-center border-b border-gray-6
                     00 pb-4 `}>
                     <img
-                        src={product?.images?.[0] || ""}
+                        src={preview || ""}
                         alt={product?.title}
-                        className="h-full w-full object-cover"
+                        className="h-80 w-full object-cover mb-3"
                     />
+
                     {product.discountPercentage && (
                         <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                             -{product.discountPercentage}%
                         </div>
                     )}
+
+                    <div className="flex items-center gap-3">
+                        {
+                            product.images.map(item => (
+                                <img className="cursor-pointer w-24" onClick={()=>setpreview(item)} src={item} />
+                            ))
+                        }
+                    </div>
                 </div>
                 <h1 className="text-2xl font-bold">{product?.title}</h1>
                 <h1 className="text-lg">{product?.description}</h1>

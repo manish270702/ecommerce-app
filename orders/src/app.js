@@ -9,12 +9,12 @@ const cors = require("cors")
 const app = express()
 app.use(express.json())
 app.use(cookieparser())
-app.use(Limiter)
 
 app.use(cors({
     origin: "http://localhost:5173",
     credentials: true               
 }));
+app.use(Limiter)
 
 connectDb()
 

@@ -16,6 +16,7 @@ import { mountCategory } from './store/reducers/Category.Slice'
 import Cart from './components/Cart'
 import { mountCart } from './store/reducers/Cart.Slice'
 import ProductView from './components/ProductView'
+import MyOrders from './components/MyOrders'
 const App = () => {
 
   
@@ -77,6 +78,7 @@ const App = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/products/:id" element={<ProductView />} />
+      <Route path="/orders" element={<MyOrders />} />
     </Routes>
   )
 }

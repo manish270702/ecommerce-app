@@ -74,7 +74,7 @@ function Cart() {
     }
 
     return (
-        <div className={`w-full flex flex-col gap-6 p-6 min-h-screen ${dark ? "bg-zinc-950" : "bg-gray-50"}`}>
+        <div className={`w-full flex flex-col  p-6 min-h-screen ${dark ? "bg-zinc-950" : "bg-gray-50"}`}>
             <div className={`text-3xl cursor-pointer ${dark ? "text-zinc-400" : "text-gray-600"}`} onClick={() => navigate(-1)}>←</div>
             {/* Header */}
             <div className='mb-4'>
@@ -85,6 +85,7 @@ function Cart() {
             {/* Cart Items Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Cart Items */}
+
                 <div className={cart?.length > 0 ? "lg:col-span-4" : "lg:col-span-4"}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {cart?.map((item) => (
