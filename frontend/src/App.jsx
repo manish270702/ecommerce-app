@@ -17,6 +17,7 @@ import Cart from './components/Cart'
 import { mountCart } from './store/reducers/Cart.Slice'
 import ProductView from './components/ProductView'
 import MyOrders from './components/MyOrders'
+import VerifyOtp from './components/CheckOtp'
 const App = () => {
 
   
@@ -79,6 +80,7 @@ const App = () => {
       <Route path="/cart" element={<Cart />} />
       <Route path="/products/:id" element={<ProductView />} />
       <Route path="/orders" element={<MyOrders />} />
+      <Route path="/check-otp" element={<VerifyOtp />} />
     </Routes>
   )
 }

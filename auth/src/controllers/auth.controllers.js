@@ -1,60 +1,110 @@
 const usermodel = require('../models/user.model')
+const axios = require('axios');
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const transporter = require("../services/email.service")
+const otpmodel = require("../models/otp.model")
 
-const register = async (req, res) => {
+const mailcontroller = async (req, res) => {
+    const { email, name } = req.body
+    try {
+        const otp = Math.floor(1000 + Math.random() * 9000)
 
-    const { name, email, phone, password, confirmPassword } = req.body
+        otpmodel.create({ email, otp })
 
-    if (password != confirmPassword) {
-        return res.status(409).json({
-            message: "Password doesn't match"
-        })
+        await transporter.sendMail({
+            from: "my602382@gmail.com",
+            to: email,
+            subject: "Your OTP for ecommerce app",
+            html: `
+                <h2>Hello ${name}!</h2>
+                <p>This email was sent using Resend <b>${otp}</b>.</p>
+            `
+        });
 
+        res.json({
+            success: true,
+            message: "Email sent successfully"
+        });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            success: false,
+            error,
+            message: "Failed to send email"
+        });
     }
-
-    const isExisting = await usermodel.findOne({ email })
-
-    const hashedpassword = await bcrypt.hash(password, 10);
-
-    if (isExisting) {
-        return res.status(409).json({
-            message: "user already exists with this email"
-        })
-    }
-
-    const user = await usermodel.create({ name, email, phone, password: hashedpassword })
-
-    const accessToken = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "15m" }
-    );
-
-
-    const refreshToken = jwt.sign(
-        { id: user._id, role: user.role },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "7d" }
-    );
-
-    res.cookie("token", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000
-    })
-
-    // console.log(refreshToken)
-
-
-    res.status(200).json({
-        message: "user created",
-        user,
-        accessToken
-    })
 }
 
+const register = async (req, res) => {
+    try {
+
+
+
+        const { name, email, phone, password, confirmPassword } = req.body
+
+        if (password != confirmPassword) {
+            return res.status(409).json({
+                message: "Password doesn't match"
+            })
+
+        }
+
+        const isExisting = await usermodel.findOne({ email })
+
+        const hashedpassword = await bcrypt.hash(password, 10);
+
+        if (isExisting) {
+            return res.status(409).json({
+                message: "user already exists with this email"
+            })
+        }
+
+        const user = await usermodel.create({ name, email, phone, password: hashedpassword })
+
+        const accessToken = jwt.sign(
+            { id: user._id, email: user.email },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "15m" }
+        );
+
+
+        const refreshToken = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        if (user) {
+            const emailres = await axios.post("http://localhost:3000/api/auth/test-email", {
+                email, name
+            });
+        }
+
+        // console.log(emailres)
+
+        res.cookie("token", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        // console.log(refreshToken)
+
+
+        res.status(200).json({
+            message: "user created",
+            user,
+            emailres,
+            accessToken
+        })
+
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 const login = async (req, res) => {
     const { loginId, password } = req.body
@@ -96,6 +146,10 @@ const login = async (req, res) => {
         { expiresIn: "7d" }
     );
 
+    const sentmail = await axios.get("http://localhost:3000/api/authtest-email", {
+        email
+    })
+
     res.cookie("token", refreshToken, {
         httpOnly: true,
         secure: true,
@@ -113,7 +167,6 @@ const login = async (req, res) => {
 
 
 }
-
 
 const refreshUserToken = async (req, res) => {
     try {
@@ -194,29 +247,29 @@ const updateUser = async (req, res) => {
 };
 
 const updateAddress = async (req, res) => {
-  try {
-    const id = req.user.id;
+    try {
+        const id = req.user.id;
 
-    const user = await usermodel.findByIdAndUpdate(
-      id,
-      {
-        address: req.body.address,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+        const user = await usermodel.findByIdAndUpdate(
+            id,
+            {
+                address: req.body.address,
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
 
-    res.status(200).json({
-      message: "Address updated successfully",
-      user,
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
+        res.status(200).json({
+            message: "Address updated successfully",
+            user,
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message,
+        });
+    }
 };
 
 
@@ -272,7 +325,6 @@ const admin = async (req, res) => {
     })
 }
 
-
 const me = async (req, res) => {
     if (req.user) {
         return res.status(200).json({ user: req.user })
@@ -302,4 +354,4 @@ const logout = async (req, res) => {
     return res.status(200).json({ message: 'logged out successfully' })
 }
 
-module.exports = { register, login, refreshUserToken, admin, me, logout, updateUser,updateAddress }
+module.exports = { register, login, refreshUserToken, admin, me, logout, updateUser, updateAddress, mailcontroller }

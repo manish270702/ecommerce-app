@@ -15,10 +15,11 @@ function RegisterForm() {
         watch
     } = useForm();
 
+
+
     const navigate = useNavigate();
 
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.user.value)
 
     const password = watch("password");
 
@@ -33,7 +34,7 @@ function RegisterForm() {
             dispatch(mountUser(res.data.user))
             dispatch(mountToken(res.data.accessToken))
 
-            navigate("/home")
+            navigate("/check-otp"); // Navigate to the OTP verification page
 
 
             // Handle successful login here (e.g., redirect user)

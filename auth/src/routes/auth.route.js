@@ -1,8 +1,10 @@
 const express = require("express");
-const { register, login, refreshUserToken,admin, me,updateUser, updateAddress } = require("../controllers/auth.controllers");
+const { register, login, refreshUserToken,admin, me,updateUser, updateAddress,mailcontroller } = require("../controllers/auth.controllers");
 const passport = require("passport");
 const router = express.Router()
 const validate = require("../middlewares/checklogin.middleware")
+const axios = require("axios")
+
 
 router.post("/register",
     register
@@ -31,6 +33,10 @@ router.patch("/update",
 router.post("/update-address",
     validate,
     updateAddress
+);
+
+router.post("/test-email", 
+    mailcontroller
 );
 
 
