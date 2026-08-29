@@ -3,8 +3,11 @@ import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { mountCart } from '../store/reducers/Cart.Slice'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 function Product({ product, addTocart, cartItem }) {
+
+
 
   const dispatch = useDispatch()
 
@@ -12,6 +15,7 @@ function Product({ product, addTocart, cartItem }) {
 
   const token = useSelector((state) => state.token?.value)
 
+  
   // cartItem can be undefined when product is NOT in cart
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1)
 
@@ -129,6 +133,9 @@ function Product({ product, addTocart, cartItem }) {
 
   const handleAddToCart = async () => {
 
+    if(!token){
+      toast.error('Please login to add items to cart')
+    }
     if (product.stock === 0) {
       return
     }
@@ -154,11 +161,6 @@ function Product({ product, addTocart, cartItem }) {
 
       console.error(err)
 
-      setError(
-        err.response?.data?.message ||
-        'Failed to add to cart'
-      )
-
     } finally {
 
       setLoading(false)
@@ -182,7 +184,7 @@ function Product({ product, addTocart, cartItem }) {
 
 
   return (
-    <div  className={`${dark ? "border border-gray-600 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full" : "border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full"}`}>
+    <div className={`${dark ? "border border-gray-600 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full" : "border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full"}`}>
       <Link to={`/products/${product._id}`}>
 
         {/* Image */}

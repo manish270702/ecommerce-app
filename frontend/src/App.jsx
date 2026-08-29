@@ -18,6 +18,8 @@ import { mountCart } from './store/reducers/Cart.Slice'
 import ProductView from './components/ProductView'
 import MyOrders from './components/MyOrders'
 import VerifyOtp from './components/CheckOtp'
+import { ToastContainer, toast } from 'react-toastify';
+
 const App = () => {
 
   
@@ -68,6 +70,8 @@ const App = () => {
     }, [token]);
 
   return (
+    <>
+    <ToastContainer />
 
     <Routes>
       <Route path="/" element={<LoginForm />} />
@@ -82,6 +86,7 @@ const App = () => {
       <Route path="/orders" element={<MyOrders />} />
       <Route path="/check-otp" element={<VerifyOtp />} />
     </Routes>
+    </>
   )
 }
 
