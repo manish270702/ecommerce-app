@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function VerifyOtp() {
     const {
@@ -8,18 +10,24 @@ function VerifyOtp() {
         formState: { errors, isSubmitting }
     } = useForm();
 
+    const navigate = useNavigate();
+
+    const user = useSelector((state) => state.user.value);
+
     const onSubmit = async (data) => {
         try {
             const response = await axios.post(
                 "http://localhost:3000/api/auth/verify-otp",
                 {
-                    otp: Number(data.otp)
+                    otp: Number(data.otp),
+                    email: user.email
+
                 }
             );
 
-            console.log(response.data);
+            if (response.status===200) navigate("/home");
         } catch (error) {
-            console.log(error.response?.data?.message);
+            console.log(error);
         }
     };
 
@@ -29,13 +37,13 @@ function VerifyOtp() {
             <input
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
+                maxLength={4}
                 placeholder="Enter OTP"
                 {...register("otp", {
                     required: "OTP is required",
                     pattern: {
-                        value: /^[0-9]{6}$/,
-                        message: "OTP must be 6 digits"
+                        value: /^[0-9]{4}$/,
+                        message: "OTP must be 4 digits"
                     }
                 })}
             />

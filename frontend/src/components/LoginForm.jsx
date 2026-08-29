@@ -17,8 +17,8 @@ function LoginForm() {
         formState: { errors }
     } = useForm();
 
-    
-    
+
+
 
     const onSubmit = async (data) => {
         try {
@@ -26,14 +26,14 @@ function LoginForm() {
             const res = await axios.post("http://localhost:3000/api/auth/login", data, {
                 withCredentials: true,
             });
-            // console.log("Success response:", res.data);
 
-            // localStorage.setItem("accessToken",res.data.accessToken)
+            if (res.status === 200) {
+                dispatch(mountUser(res.data.user))
+                dispatch(mountToken(res.data.accessToken))
+                navigate("/check-otp");
+            }
 
-            dispatch(mountUser(res.data.user))
-            dispatch(mountToken(res.data.accessToken))
-            
-            navigate("/home")
+            navigate("/check-otp")
             // Handle successful login here (e.g., redirect user)
         } catch (error) {
             console.error("Login failed:", error.response?.data || error.message);

@@ -24,25 +24,44 @@ function RegisterForm() {
     const password = watch("password");
 
     const onSubmit = async (data) => {
-        try {
-            console.log("Sending data:", data);
-            const res = await axios.post("http://localhost:3000/api/auth/register", data, {
+    try {
+        console.log("Sending data:", data);
+
+        const res = await axios.post(
+            "http://localhost:3000/api/auth/register",
+            data,
+            {
                 withCredentials: true,
-            });
-            console.log("Success response:", res.data);
+            }
+        );
 
-            dispatch(mountUser(res.data.user))
-            dispatch(mountToken(res.data.accessToken))
+        console.log("Status:", res.status);
+        console.log("Response data:", res.data);
 
-            navigate("/check-otp"); // Navigate to the OTP verification page
+        if (res.status === 200) {
+            // console.log("Dispatching user...");
+            dispatch(mountUser(res.data.user));
 
+            // console.log("Dispatching token...");
+            dispatch(mountToken(res.data.accessToken));
 
-            // Handle successful login here (e.g., redirect user)
-        } catch (error) {
-            console.error("Login failed:", error.response?.data || error.message);
-            // Handle error UI here (e.g., show "Invalid credentials" alert)
+            // console.log("Navigating...");
+            navigate("/check-otp");
         }
-    };
+
+    } catch (error) {
+        console.error("Registration failed");
+
+        if (error.response) {
+            console.error("Status:", error.response.status);
+            console.error("Data:", error.response.data);
+        } else if (error.request) {
+            console.error("No response received:", error.request);
+        } else {
+            console.error("Error:", error.message);
+        }
+    }
+};
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

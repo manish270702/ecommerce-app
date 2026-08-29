@@ -156,7 +156,7 @@ function CartItem({ item }) {
                             value={quantity}
                             onChange={handleQuantityChange}
                             disabled={loading || item.stock === 0}
-                            className={`w-16 px-3 py-2 border ${dark ? "border-zinc-600 text-zinc-50" : "border-gray-300"} rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                            className={`w-20 flex items-start px-3 py-2 border ${dark ? "border-zinc-600 text-zinc-50" : "border-gray-300"} rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed`}
                         />
                         {/* <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>
                         of {item.stock} available

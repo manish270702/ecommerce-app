@@ -40,9 +40,20 @@ function Navbar() {
             <Link to="/orders">Orders</Link>
           </>
           }
-          <Link to="/cart" className= "relative">Cart
-          {cart && cart.length===0?null:<span className="absolute top-0 -right-4 bg-red-600 rounded-full w-4 h-4 text-xs flex items-center justify-center">{cart.length}</span>}
+          {/* <Link to="/cart" className= "relative">Cart
+          {cart && cart?.length===0?null:<span className="absolute top-0 -right-4 bg-red-600 rounded-full w-4 h-4 text-xs flex items-center justify-center">{cart.length}</span>}
+          </Link> */}
+
+          <Link to="/cart" className="relative">
+            Cart
+
+            {cart?.length > 0 && (
+              <span className="absolute top-0 -right-4 bg-red-600 rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                {cart.length}
+              </span>
+            )}
           </Link>
+
           <button className="cursor-pointer" onClick={() => changeTheme()} >
             {dark ? "Light Mode" : "Dark Mode"}
           </button>

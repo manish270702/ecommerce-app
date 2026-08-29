@@ -10,7 +10,7 @@ const mailcontroller = async (req, res) => {
     try {
         const otp = Math.floor(1000 + Math.random() * 9000)
 
-        otpmodel.create({ email, otp })
+        await otpmodel.create({ email, otp })
 
         await transporter.sendMail({
             from: "my602382@gmail.com",
@@ -76,11 +76,10 @@ const register = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        if (user) {
-            const emailres = await axios.post("http://localhost:3000/api/auth/test-email", {
-                email, name
-            });
-        }
+        const emailres = await axios.post("http://localhost:3000/api/auth/test-email", {
+            email, name
+        });
+
 
         // console.log(emailres)
 
@@ -94,12 +93,12 @@ const register = async (req, res) => {
         // console.log(refreshToken)
 
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "user created",
             user,
-            emailres,
-            accessToken
-        })
+            accessToken,
+            emailStatus: emailres.data.success
+        });
 
     } catch (error) {
         console.log(error)
@@ -146,10 +145,11 @@ const login = async (req, res) => {
         { expiresIn: "7d" }
     );
 
-    const sentmail = await axios.get("http://localhost:3000/api/authtest-email", {
-        email
-    })
+    const emailres = await axios.post("http://localhost:3000/api/auth/test-email", {
+        email:user.email, name: user.name
+    });
 
+    // console.log(safeUser.email)
     res.cookie("token", refreshToken, {
         httpOnly: true,
         secure: true,
@@ -162,7 +162,8 @@ const login = async (req, res) => {
     res.status(200).json({
         message: "user logined successfully",
         user: safeUser,
-        accessToken
+        accessToken,
+        emailStatus: emailres.data.success
     })
 
 
@@ -354,4 +355,26 @@ const logout = async (req, res) => {
     return res.status(200).json({ message: 'logged out successfully' })
 }
 
-module.exports = { register, login, refreshUserToken, admin, me, logout, updateUser, updateAddress, mailcontroller }
+const verifyotp = async (req, res) => {
+    const { otp, email } = req.body
+
+    // console.log(typeof(otp))
+
+    const user = await otpmodel.findOne({
+        email
+    })
+
+    // console.log(email)
+
+    if (!user) return res.status(404).json({ message: "no such user" })
+    // console.log(user)
+
+    if (user.otp == otp) {
+        return res.status(200).json({ message: "login successful" })
+    } else {
+        return res.status(404).json({ message: "invalid otp" })
+    }
+
+}
+
+module.exports = { register, login, verifyotp, refreshUserToken, admin, me, logout, updateUser, updateAddress, mailcontroller }

@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, refreshUserToken,admin, me,updateUser, updateAddress,mailcontroller } = require("../controllers/auth.controllers");
+const { register, login, refreshUserToken,admin,verifyotp, me,updateUser, updateAddress,mailcontroller } = require("../controllers/auth.controllers");
 const passport = require("passport");
 const router = express.Router()
 const validate = require("../middlewares/checklogin.middleware")
@@ -16,6 +16,8 @@ router.post("/login",
 router.post("/admin/register",
     admin
 )
+
+router.post("/verify-otp",verifyotp)
 
 router.get("/refreshToken",
     refreshUserToken
