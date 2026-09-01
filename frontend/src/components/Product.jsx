@@ -248,7 +248,7 @@ function Product({ product, addTocart, cartItem }) {
             <div className="flex items-baseline gap-2">
 
               <span className={`${dark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-gray-900"}`}>
-                ${discountedPrice}
+                ₹{discountedPrice}
               </span>
 
               {product.discountPercentage && (

@@ -147,7 +147,7 @@ function Cart() {
                             <div className='flex justify-between items-center'>
                                 <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>Subtotal:</span>
                                 <span className={`text-lg font-semibold ${dark ? "text-gray-300" : "text-gray-900"}`}>
-                                    {calculateTotal() || 0}
+                                    ₹ {calculateTotal() || 0}
                                 </span>
                             </div>
                             <div className='flex justify-between items-center'>
@@ -157,7 +157,7 @@ function Cart() {
                             <div className='border-t pt-3 flex justify-between items-center'>
                                 <span className={`text-sm ${dark ? "text-zinc-400" : "text-gray-600"}`}>Total:</span>
                                 <span className={`text-2xl font-bold ${dark ? "text-blue-400" : "text-blue-600"}`}>
-                                    {calculateTotal() || 0}
+                                    ₹ {calculateTotal() || 0}
                                 </span>
                             </div>
                         </div>

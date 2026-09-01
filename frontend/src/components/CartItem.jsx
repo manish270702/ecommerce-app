@@ -168,7 +168,7 @@ function CartItem({ item }) {
                         Total:
                     </span>
                     <span className={`font-bold text-lg ${dark ? "text-blue-400" : "text-blue-600"}`}>
-                        ${totalPrice}
+                        ₹{totalPrice} 
                     </span>
                 </div>
             </div>
