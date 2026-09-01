@@ -10,6 +10,15 @@ const mailcontroller = async (req, res) => {
     try {
         const otp = Math.floor(1000 + Math.random() * 9000)
 
+        const otpalreadyExists = await otpmodel.findOne({ email })
+
+        if (otpalreadyExists) {
+            return res.json({
+                success: true,
+                message: "Email already sent successfully"
+            });
+        }
+
         await otpmodel.create({ email, otp })
 
         await transporter.sendMail({
@@ -22,7 +31,7 @@ const mailcontroller = async (req, res) => {
             `
         });
 
-        res.json({
+        return res.json({
             success: true,
             message: "Email sent successfully"
         });
@@ -146,7 +155,7 @@ const login = async (req, res) => {
     );
 
     const emailres = await axios.post("http://localhost:3000/api/auth/test-email", {
-        email:user.email, name: user.name
+        email: user.email, name: user.name
     });
 
     // console.log(safeUser.email)
